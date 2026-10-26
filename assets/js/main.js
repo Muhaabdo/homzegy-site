@@ -199,6 +199,43 @@
     update();
   }
 
+  /* ---------- payment plan toggle (price list) ---------- */
+  document.querySelectorAll("[data-plan-toggle]").forEach(function (tg) {
+    var scope = tg.closest("[data-plist]") || document;
+    var btns = tg.querySelectorAll("[data-plan]");
+    var head = scope.querySelector("[data-price-head]");
+    var R = "\u200F";
+    var nf = function (v) { return Math.round(v).toLocaleString("en-US"); };
+    var LABEL = { cash: "كاش", "5": "5% مقدم، تقسيط 5 سنين", "8": "5% مقدم، تقسيط 8 سنين" };
+    function setPlan(plan, user) {
+      btns.forEach(function (b) { b.setAttribute("aria-checked", b.getAttribute("data-plan") === plan); });
+      if (head) head.textContent = plan === "cash" ? "السعر كاش" : "القسط الشهري التقريبي";
+      scope.querySelectorAll("tr[data-cash]").forEach(function (tr) {
+        var cash = +tr.getAttribute("data-cash"), p5 = +tr.getAttribute("data-p5"), p8 = +tr.getAttribute("data-p8");
+        var cell = tr.querySelector(".u-price"), main = cell.querySelector(".u-main"), note = cell.querySelector(".u-note");
+        var off = Math.round((1 - cash / p8) * 100);
+        if (plan === "cash") {
+          main.innerHTML = '<span class="num">' + nf(cash) + '</span> <small>جنيه كاش</small>';
+          note.textContent = "بدل " + nf(p8) + " بالتقسيط · خصم " + off + "%";
+        } else {
+          var total = plan === "5" ? p5 : p8, months = plan === "5" ? 60 : 96;
+          var mo = Math.round(total * 0.95 / months / 100) * 100;
+          main.innerHTML = '<span class="num">' + nf(mo) + '</span> <small>جنيه/شهر</small>';
+          note.textContent = "مقدم " + nf(total * 0.05) + " · إجمالي " + nf(total);
+        }
+        var wa = tr.querySelector("[data-wa]");
+        if (wa) {
+          if (!wa.hasAttribute("data-wa-base")) wa.setAttribute("data-wa-base", wa.getAttribute("data-wa-msg") || "");
+          wa.href = waUrl(wa.getAttribute("data-wa-base") + "\n" + R + "نظام السداد: " + LABEL[plan]);
+        }
+      });
+      if (user) track("plan_select", { plan: plan });
+    }
+    btns.forEach(function (b) { b.addEventListener("click", function () { setPlan(b.getAttribute("data-plan"), true); }); });
+    var init = tg.querySelector('[aria-checked="true"]');
+    setPlan(init ? init.getAttribute("data-plan") : "cash", false);
+  });
+
   /* ---------- view & engagement events ---------- */
   if ("IntersectionObserver" in window) {
     var io = new IntersectionObserver(function (entries) {
