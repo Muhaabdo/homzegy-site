@@ -369,22 +369,11 @@ footer .legal-note p{max-width:95ch;margin-bottom:.7rem}
 /* cash discount + installments */
 .card .from-row{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
 .badge-off{display:inline-block;background:#FBE9E2;color:#A9461F;font-size:.78rem;font-weight:700;border-radius:999px;padding:.25rem .7rem;white-space:nowrap}
-.card .from-inst{margin-top:8px;font-size:.9rem;color:#2D4354}
-.card .from-inst b{font-size:1.05rem;color:var(--teal-ink)}
-.card .from-inst small{display:block;font-size:.76rem;color:var(--muted)}
 .plan-name{display:block;font-size:.85rem;opacity:.8;margin-bottom:.2rem}
 .plan-box b .num{font-size:inherit}
 .plans .plan-box b{font-size:1.6rem}
-.plan-note{font-size:.82rem;color:var(--muted);margin-top:.8rem;max-width:80ch}
-.plan-toggle{display:inline-flex;background:var(--sand);border-radius:999px;padding:5px;margin:1.2rem 0 .2rem}
-.plan-toggle button{font:inherit;font-weight:600;border:0;background:transparent;padding:.55rem 1.2rem;border-radius:999px;cursor:pointer;color:var(--muted);white-space:nowrap}
-.plan-toggle button small{font-weight:500;color:var(--coral-btn);font-size:.75rem}
-.plan-toggle button[aria-checked="true"]{background:var(--navy);color:#fff}
-.plan-toggle button[aria-checked="true"] small{color:#FFB59B}
 .plist .u-main{display:block;font-weight:700;white-space:nowrap}
-.plist .u-note{display:block;font-weight:400;font-size:.76rem;color:var(--muted);white-space:normal}
+.plist .u-price .badge-off{margin-top:4px;font-size:.72rem;padding:.15rem .55rem}
 @media (max-width:640px){
-  .plan-toggle{display:flex}
-  .plan-toggle button{flex:1;padding:.55rem .5rem;font-size:.9rem}
   .card .from-row{flex-wrap:wrap}
 }
