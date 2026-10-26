@@ -29,13 +29,16 @@ gtmId: "",          // اختياري
 كل وحدة في جدول الأسعار عبارة عن `<tr>` في صفحة المشروع. عدّل الرقم في `u-price`، وعدّل نفس الرقم في رسالة الواتساب (`data-wa-msg`) في نفس السطر.
 لو أقل سعر في المشروع اتغير، عدّله كمان في: الهيرو، كارت المرحلة، الأسئلة الشائعة، `<meta name="description">`، الـ JSON-LD (`lowPrice`)، `llms.txt`، والصفحة الرئيسية.
 
-## النشر على GitHub Pages
-1. ارفع محتوى الفولدر ده على الـ repo (الملفات في الـ root).
-2. Settings → Pages → Source: **Deploy from a branch** → `main` / `root`.
-3. ملف `CNAME` فيه `homzegy.com`. من الـ DNS عند مزوّد الدومين:
-   - `A` records للـ root على: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
-   - `CNAME` لـ `www` على `<username>.github.io`
-4. فعّل **Enforce HTTPS**.
+## التجربة لوكال
+افتح الفولدر بسيرفر محلي (مش بدبل كليك على الملف) عشان الروابط تشتغل صح:
+```bash
+python -m http.server 8000
+```
+وبعدين افتح `http://localhost:8000`. أو استخدم Live Server في VS Code.
+
+## النشر على Hostinger
+- اربط الـ repo من hPanel → Advanced → **Git**: الـ repository `https://github.com/Muhaabdo/homzegy-site.git`، الفرع `main`، والمسار `public_html`. وفعّل Auto Deployment لو عايز كل push يتنشر لوحده.
+- ملف `.htaccess` جاهز: بيحوّل لـ HTTPS ومن غير www، وبيشغّل صفحة 404، وبيقفل فولدرات `apps-script` و`docs` وملف `README.md` عن الزوار، وبيضغط الملفات ويعمل caching للصور.
 
 ## بعد النشر
 - Google Search Console: ضيف الدومين وابعت `https://homzegy.com/sitemap.xml`.
