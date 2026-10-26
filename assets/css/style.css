@@ -354,7 +354,11 @@ footer .legal-note p{max-width:95ch;margin-bottom:.7rem}
   .plist tbody tr{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:12px 14px;border-bottom:1px solid var(--line-2)}
   .plist td{border:0;padding:0}
   .plist td.u-meta{grid-column:1/-1;order:-1}
-  .plist td.u-cta{align-self:center;width:auto}
+  .plist tbody tr{grid-template-columns:1fr}
+  .plist td.u-cta{width:auto;margin-top:8px}
+  .plist td.u-cta .btn{width:100%;padding:.6rem 1rem;font-size:.9rem}
+  .plist .u-price{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+  .plist .u-price .badge-off{margin-top:0}
   .plist .u-sub{display:block}
   .plist .hide-sm{display:none}
   .dist b{font-size:1.8rem}
