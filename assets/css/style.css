@@ -411,3 +411,9 @@ body.hdr-hide .secnav{top:0}
 [dir=ltr] .plist .u-cat + .u-phase{direction:ltr}
 [dir=ltr] .fields input[type=tel]{text-align:left}
 [dir=ltr] .ready li > span:last-child{text-align:right!important}
+
+/* WhatsApp icon on small text links / ghost buttons (so users know where the click goes) */
+.ready a.link{display:inline-flex;align-items:center;gap:5px;text-decoration:none}
+.ready a.link svg{width:15px;height:15px;flex:0 0 auto}
+.ready a.link span{text-decoration:underline;text-underline-offset:3px}
+.ready .btn-ghost svg{color:var(--wa);width:17px;height:17px}
