@@ -157,6 +157,8 @@ html{scroll-padding-top:130px}
 .plist tbody tr:hover{background:#F7F6F2}
 .plist .u-type{direction:ltr;unicode-bidi:isolate;font-weight:500}
 .plist .u-sub{display:none;color:var(--muted);font-size:.8rem}
+.plist .u-cat{display:block;font-weight:600;font-size:1rem}
+.plist .u-cat + .u-phase{display:block;margin-top:2px;direction:rtl}
 .plist .u-phase{direction:ltr;unicode-bidi:isolate;color:var(--muted);font-size:.88rem}
 .plist .u-price{font-weight:700;white-space:nowrap}
 .plist .u-price small{font-weight:400;color:var(--muted);font-size:.78rem}
@@ -179,7 +181,9 @@ html{scroll-padding-top:130px}
 .phase-from{margin-bottom:1rem}
 .phase-from small{color:var(--muted)}
 .phase-from b{font-size:1.8rem;font-weight:700;color:var(--teal-ink);margin-inline:4px}
-.phase .plist{grid-area:units;border-radius:0;border-top:1px solid var(--line-2)}
+.phase .units{grid-area:units;border-top:1px solid var(--line-2)}
+.phase .plist{border-radius:0}
+.phase .units .more{margin:12px 16px 18px}
 .phase .plist thead th{background:var(--sand-2);color:var(--navy);font-weight:600}
 
 /* early delivery */
