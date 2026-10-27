@@ -11,7 +11,7 @@
 /* ============================ CONFIG ============================ */
 const CONFIG = {
   SHEET_LEADS: 'Leads',
-  SHEET_SUMMARY: 'ملخص',
+  SHEET_SUMMARY: 'Summary',
   TIMEZONE: 'Africa/Cairo',
   DUPLICATE_WINDOW_DAYS: 30,          // same phone within N days → flagged as repeat
   // NOTIFY_EMAIL: 'sales@example.com', // ← email notifications (see sendLeadEmail_ below, currently disabled)
@@ -23,34 +23,40 @@ const BRAND = {
   sand: '#E1DFD6', sandLight: '#F6F5F1', white: '#FFFFFF', muted: '#4D6272'
 };
 
-const STATUSES = ['جديد', 'تم التواصل', 'مهتم', 'معاينة', 'حجز', 'غير مهتم', 'مش بيرد', 'رقم غلط'];
+const STATUSES = ['New', 'Contacted', 'Interested', 'Site Visit', 'Booked', 'Not Interested', 'No Answer', 'Wrong Number'];
 const STATUS_COLORS = {
-  'جديد': ['#FBE9E2', '#A9461F'], 'تم التواصل': ['#E3F4F4', '#0C7373'], 'مهتم': ['#D7F0E1', '#1F8F4E'],
-  'معاينة': ['#DCEBFA', '#1B5A96'], 'حجز': ['#1F8F4E', '#FFFFFF'], 'غير مهتم': ['#ECEAE3', '#4D6272'],
-  'مش بيرد': ['#FFF4D6', '#8A6100'], 'رقم غلط': ['#F6D5D5', '#9B1C1C']
+  'New': ['#FBE9E2', '#A9461F'], 'Contacted': ['#E3F4F4', '#0C7373'], 'Interested': ['#D7F0E1', '#1F8F4E'],
+  'Site Visit': ['#DCEBFA', '#1B5A96'], 'Booked': ['#1F8F4E', '#FFFFFF'], 'Not Interested': ['#ECEAE3', '#4D6272'],
+  'No Answer': ['#FFF4D6', '#8A6100'], 'Wrong Number': ['#F6D5D5', '#9B1C1C']
 };
+// Old Arabic labels → English (used once by setup to migrate existing rows)
+const LEGACY_LABELS = {
+  'جديد': 'New', 'تم التواصل': 'Contacted', 'مهتم': 'Interested', 'معاينة': 'Site Visit', 'حجز': 'Booked',
+  'غير مهتم': 'Not Interested', 'مش بيرد': 'No Answer', 'رقم غلط': 'Wrong Number', 'رقم مكرر': 'Repeat'
+};
+const OLD_SHEETS = ['ملخص'];
 
 /*
- * Columns: [key, Arabic header, width]
+ * Columns: [key, header, width]
  * Client-facing data first, marketing/attribution data after.
  */
 const COLUMNS = [
-  ['submitted_at', 'التاريخ والوقت', 150],
-  ['name', 'الاسم', 160],
-  ['phone', 'الموبايل', 135],
-  ['whatsapp', 'واتساب', 95],
-  ['project', 'المشروع', 130],
-  ['interest', 'مهتم بـ', 170],
-  ['status', 'الحالة', 115],
-  ['notes', 'ملاحظات', 220],
-  ['repeat', 'تكرار', 95],
-  ['source', 'المصدر', 130],
-  ['campaign', 'الحملة', 170],
-  ['keyword', 'الكلمة', 150],
-  ['page', 'الصفحة', 140],
-  ['form_location', 'مكان الفورم', 100],
-  ['lang', 'اللغة', 60],
-  ['device', 'الجهاز', 75],
+  ['submitted_at', 'Date & Time', 150],
+  ['name', 'Name', 160],
+  ['phone', 'Phone', 135],
+  ['whatsapp', 'WhatsApp', 105],
+  ['project', 'Project', 130],
+  ['interest', 'Interest', 170],
+  ['status', 'Status', 125],
+  ['notes', 'Notes', 220],
+  ['repeat', 'Repeat', 80],
+  ['source', 'Source', 130],
+  ['campaign', 'Campaign', 170],
+  ['keyword', 'Keyword', 150],
+  ['page', 'Page', 140],
+  ['form_location', 'Form Location', 110],
+  ['lang', 'Language', 80],
+  ['device', 'Device', 80],
   ['utm_source', 'utm_source', 110],
   ['utm_medium', 'utm_medium', 100],
   ['utm_campaign', 'utm_campaign', 140],
@@ -60,9 +66,9 @@ const COLUMNS = [
   ['gbraid', 'gbraid', 120],
   ['wbraid', 'wbraid', 120],
   ['msclkid', 'msclkid', 120],
-  ['landing_page', 'أول صفحة دخلها', 160],
-  ['referrer', 'جاي منين (Referrer)', 180],
-  ['page_url', 'رابط الصفحة', 220],
+  ['landing_page', 'Landing Page', 160],
+  ['referrer', 'Referrer', 180],
+  ['page_url', 'Page URL', 220],
   ['lead_id', 'Lead ID', 110],
 ];
 const COL = {}; COLUMNS.forEach(function (c, i) { COL[c[0]] = i + 1; });
@@ -88,9 +94,9 @@ function doPost(e) {
       whatsapp: '',
       project: clean_(p.project),
       interest: clean_(p.interest) || '—',
-      status: 'جديد',
+      status: 'New',
       notes: '',
-      repeat: isRepeat_(sh, phone, now) ? 'رقم مكرر' : '',
+      repeat: isRepeat_(sh, phone, now) ? 'Repeat' : '',
       source: sourceLabel_(p),
       campaign: clean_(p.utm_campaign),
       keyword: clean_(p.utm_term),
@@ -115,7 +121,7 @@ function doPost(e) {
       return lead[c[0]];
     });
     sh.getRange(row, 1, 1, COLUMNS.length).setValues([values]);
-    sh.getRange(row, COL.whatsapp).setFormula('=HYPERLINK("https://wa.me/' + waNumber_(phone) + '","فتح واتساب")');
+    sh.getRange(row, COL.whatsapp).setFormula('=HYPERLINK("https://wa.me/' + waNumber_(phone) + '","Open WhatsApp")');
     styleDataRow_(sh, row);
 
     // sendLeadEmail_(lead);   // ← enable later (uncomment) after setting CONFIG.NOTIFY_EMAIL
@@ -145,7 +151,7 @@ function setup() {
     const first = ss.getSheets()[0];
     sh = (first.getLastRow() === 0 && first.getName() !== CONFIG.SHEET_SUMMARY) ? first.setName(CONFIG.SHEET_LEADS) : ss.insertSheet(CONFIG.SHEET_LEADS);
   }
-  sh.setRightToLeft(true);
+  sh.setRightToLeft(false);
   if (sh.getMaxColumns() < COLUMNS.length) sh.insertColumnsAfter(sh.getMaxColumns(), COLUMNS.length - sh.getMaxColumns());
   if (sh.getMaxColumns() > COLUMNS.length) sh.deleteColumns(COLUMNS.length + 1, sh.getMaxColumns() - COLUMNS.length);
   if (sh.getMaxRows() < 500) sh.insertRowsAfter(sh.getMaxRows(), 500 - sh.getMaxRows());
@@ -183,7 +189,7 @@ function setup() {
     rules.push(SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo(s).setBackground(c[0]).setFontColor(c[1]).setRanges([statusRange]).build());
   });
   const repeatRange = sh.getRange(2, COL.repeat, sh.getMaxRows() - 1, 1);
-  rules.push(SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('رقم مكرر').setBackground('#FFF4D6').setFontColor('#8A6100').setRanges([repeatRange]).build());
+  rules.push(SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('Repeat').setBackground('#FFF4D6').setFontColor('#8A6100').setRanges([repeatRange]).build());
   const sourceRange = sh.getRange(2, COL.source, sh.getMaxRows() - 1, 1);
   rules.push(SpreadsheetApp.newConditionalFormatRule().whenTextStartsWith('Google Ads').setFontColor('#0C7373').setBold(true).setRanges([sourceRange]).build());
   sh.setConditionalFormatRules(rules);
@@ -192,46 +198,48 @@ function setup() {
   sh.getRange(2, COL.notes, sh.getMaxRows() - 1, 1).setWrap(true);
   if (!sh.getFilter()) sh.getRange(1, 1, sh.getMaxRows(), COLUMNS.length).createFilter();
 
+  migrateLegacy_(sh);
+  OLD_SHEETS.forEach(function (n) { const o = ss.getSheetByName(n); if (o) ss.deleteSheet(o); });
   buildSummary_(ss);
   ss.setActiveSheet(sh);
   ss.moveActiveSheet(1);
-  toast_(ss, 'تم تجهيز الشيت ✓');
+  toast_(ss, 'Sheet is ready ✓');
 }
 
 function buildSummary_(ss) {
   let s = ss.getSheetByName(CONFIG.SHEET_SUMMARY);
   if (!s) s = ss.insertSheet(CONFIG.SHEET_SUMMARY);
   s.clear(); s.clearConditionalFormatRules();
-  s.setRightToLeft(true);
+  s.setRightToLeft(false);
   s.getRange('A:Z').setFontFamily('Cairo').setFontColor(BRAND.navy);
   const L = "'" + CONFIG.SHEET_LEADS + "'!";
   const col = function (k) { const a = colLetter_(COL[k]); return L + a + '2:' + a; };
 
-  s.getRange('A1').setValue('Homzegy — ملخص الليدز').setFontSize(16).setFontWeight('bold');
+  s.getRange('A1').setValue('Homzegy — Leads Summary').setFontSize(16).setFontWeight('bold');
   s.getRange('A1:D1').merge().setBackground(BRAND.navy).setFontColor(BRAND.white);
   s.setRowHeight(1, 44);
 
   const kpis = [
-    ['إجمالي الليدز', '=COUNTA(' + col('lead_id') + ')'],
-    ['النهارده', '=COUNTIFS(' + col('submitted_at') + ',">="&TODAY())'],
-    ['آخر 7 أيام', '=COUNTIFS(' + col('submitted_at') + ',">="&TODAY()-6)'],
-    ['من Google Ads', '=COUNTIF(' + col('source') + ',"Google Ads*")'],
-    ['لسه جديد (ماحدش كلمه)', '=COUNTIF(' + col('status') + ',"جديد")'],
-    ['حجز', '=COUNTIF(' + col('status') + ',"حجز")'],
+    ['Total leads', '=COUNTA(' + col('lead_id') + ')'],
+    ['Today', '=COUNTIFS(' + col('submitted_at') + ',">="&TODAY())'],
+    ['Last 7 days', '=COUNTIFS(' + col('submitted_at') + ',">="&TODAY()-6)'],
+    ['From Google Ads', '=COUNTIF(' + col('source') + ',"Google Ads*")'],
+    ['New (not contacted yet)', '=COUNTIF(' + col('status') + ',"New")'],
+    ['Booked', '=COUNTIF(' + col('status') + ',"Booked")'],
   ];
   s.getRange(3, 1, kpis.length, 2).setValues(kpis);
   s.getRange(3, 1, kpis.length, 1).setBackground(BRAND.sandLight).setFontWeight('bold');
   s.getRange(3, 2, kpis.length, 1).setBackground(BRAND.tealLight).setFontSize(14).setFontWeight('bold').setHorizontalAlignment('center');
 
   const section = function (row, title, key) {
-    s.getRange(row, 1, 1, 2).setValues([[title, 'عدد']]).setBackground(BRAND.teal).setFontWeight('bold');
+    s.getRange(row, 1, 1, 2).setValues([[title, 'Leads']]).setBackground(BRAND.teal).setFontWeight('bold');
     s.getRange(row + 1, 1).setFormula('=IFERROR(QUERY({' + col(key) + '},"select Col1, count(Col1) where Col1 is not null group by Col1 order by count(Col1) desc label count(Col1) \'\'",0),"—")');
   };
-  section(11, 'حسب المشروع', 'project');
-  section(11 + 12, 'حسب الاهتمام', 'interest');
-  s.getRange(11, 4, 1, 2).setValues([['حسب المصدر', 'عدد']]).setBackground(BRAND.teal).setFontWeight('bold');
+  section(11, 'By project', 'project');
+  section(11 + 12, 'By interest', 'interest');
+  s.getRange(11, 4, 1, 2).setValues([['By source', 'Leads']]).setBackground(BRAND.teal).setFontWeight('bold');
   s.getRange(12, 4).setFormula('=IFERROR(QUERY({' + col('source') + '},"select Col1, count(Col1) where Col1 is not null group by Col1 order by count(Col1) desc label count(Col1) \'\'",0),"—")');
-  s.getRange(23, 4, 1, 2).setValues([['حسب الحالة', 'عدد']]).setBackground(BRAND.teal).setFontWeight('bold');
+  s.getRange(23, 4, 1, 2).setValues([['By status', 'Leads']]).setBackground(BRAND.teal).setFontWeight('bold');
   s.getRange(24, 4).setFormula('=IFERROR(QUERY({' + col('status') + '},"select Col1, count(Col1) where Col1 is not null group by Col1 order by count(Col1) desc label count(Col1) \'\'",0),"—")');
   s.setColumnWidth(1, 220); s.setColumnWidth(2, 90); s.setColumnWidth(3, 30); s.setColumnWidth(4, 200); s.setColumnWidth(5, 90);
   s.setFrozenRows(1);
@@ -242,28 +250,43 @@ function buildSummary_(ss) {
 // Disabled for now. To enable: set CONFIG.NOTIFY_EMAIL above, then uncomment the call in doPost and the body below.
 function sendLeadEmail_(lead) {
   // if (!CONFIG.NOTIFY_EMAIL) return;
-  // const subject = 'ليد جديد — ' + (lead.project || 'Homzegy') + ' — ' + lead.name;
+  // const subject = 'New lead — ' + (lead.project || 'Homzegy') + ' — ' + lead.name;
   // const rows = [
-  //   ['الاسم', lead.name], ['الموبايل', lead.phone], ['المشروع', lead.project], ['مهتم بـ', lead.interest],
-  //   ['المصدر', lead.source], ['الحملة', lead.campaign], ['الكلمة', lead.keyword], ['الصفحة', lead.page],
-  //   ['الجهاز', lead.device], ['تكرار', lead.repeat || '—'], ['Lead ID', lead.lead_id]
+  //   ['Name', lead.name], ['Phone', lead.phone], ['Project', lead.project], ['Interest', lead.interest],
+  //   ['Source', lead.source], ['Campaign', lead.campaign], ['Keyword', lead.keyword], ['Page', lead.page],
+  //   ['Device', lead.device], ['Repeat', lead.repeat || '—'], ['Lead ID', lead.lead_id]
   // ];
   // const html =
-  //   '<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;color:' + BRAND.navy + '">' +
-  //   '<div style="background:' + BRAND.navy + ';color:#fff;padding:14px 18px;border-radius:10px 10px 0 0;font-size:18px"><b>Homzegy</b> — ليد جديد</div>' +
+  //   '<div dir="ltr" style="font-family:Tahoma,Arial,sans-serif;color:' + BRAND.navy + '">' +
+  //   '<div style="background:' + BRAND.navy + ';color:#fff;padding:14px 18px;border-radius:10px 10px 0 0;font-size:18px"><b>Homzegy</b> — New lead</div>' +
   //   '<table style="border-collapse:collapse;width:100%;max-width:560px;background:#fff">' +
   //   rows.map(function (r, i) {
   //     return '<tr style="background:' + (i % 2 ? BRAND.sandLight : '#fff') + '"><td style="padding:8px 12px;font-weight:bold;width:130px">' + r[0] +
   //            '</td><td style="padding:8px 12px">' + (r[1] || '—') + '</td></tr>';
   //   }).join('') +
   //   '</table>' +
-  //   '<p style="margin:16px 0"><a href="https://wa.me/' + waNumber_(lead.phone) + '" style="background:#1F8F4E;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">كلّمه واتساب</a> ' +
-  //   '&nbsp; <a href="' + SpreadsheetApp.getActiveSpreadsheet().getUrl() + '" style="color:' + BRAND.teal + '">افتح الشيت</a></p></div>';
+  //   '<p style="margin:16px 0"><a href="https://wa.me/' + waNumber_(lead.phone) + '" style="background:#1F8F4E;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">WhatsApp him</a> ' +
+  //   '&nbsp; <a href="' + SpreadsheetApp.getActiveSpreadsheet().getUrl() + '" style="color:' + BRAND.teal + '">Open sheet</a></p></div>';
   // MailApp.sendEmail({ to: CONFIG.NOTIFY_EMAIL, subject: subject, htmlBody: html, name: 'Homzegy Leads' });
 }
 
 
 /* ----------------------------- Helpers ----------------------------- */
+/** Converts rows saved with the old Arabic labels (status, repeat, WhatsApp link text) to English. */
+function migrateLegacy_(sh) {
+  const n = sh.getLastRow() - 1;
+  if (n < 1) return;
+  [COL.status, COL.repeat].forEach(function (c) {
+    const r = sh.getRange(2, c, n, 1), v = r.getValues();
+    let changed = false;
+    v.forEach(function (x) { if (LEGACY_LABELS[x[0]]) { x[0] = LEGACY_LABELS[x[0]]; changed = true; } });
+    if (changed) r.setValues(v);
+  });
+  const w = sh.getRange(2, COL.whatsapp, n, 1), f = w.getFormulas();
+  if (f.some(function (x) { return x[0].indexOf('فتح واتساب') > -1; }))
+    w.setFormulas(f.map(function (x) { return [x[0].replace('فتح واتساب', 'Open WhatsApp')]; }));
+}
+
 function getLeadsSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sh = ss.getSheetByName(CONFIG.SHEET_LEADS);
