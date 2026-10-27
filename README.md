@@ -9,6 +9,7 @@
 | `/somabay/` | `somabay/index.html` |
 | `/makadi-heights/` | `makadi-heights/index.html` |
 | `/privacy-policy/` | `privacy-policy/index.html` |
+| `/thank-you/` | `thank-you/index.html` — بعد إرسال الفورم (noindex) |
 | 404 | `404.html` |
 
 ## الملفات المشتركة
@@ -20,10 +21,10 @@
 ```js
 whatsapp: "201224044430",
 phone: "+201224044430",
-formEndpoint: "",   // لينك Google Apps Script — شوف apps-script/README.md
-ga4Id: "",          // G-XXXXXXX
-gtmId: "",          // اختياري
+formEndpoint: "",          // لينك Google Apps Script — شوف apps-script/README.md
+thankYouUrl: "/thank-you/" // الفورم بيحوّل هنا بعد الإرسال
 ```
+Google Tag Manager (`GTM-5B2ZWT3M`) متركب في `<head>` و`<body>` لكل الصفحات، وكل الأحداث بتتبعت للـ `dataLayer`.
 
 ## تحديث الأسعار
 - **Somabay:** جدول الأسعار مختصر بـ 4 فئات حسب عدد الغرف (أقل سعر تقسيط 8 سنين في كل فئة)، وكل كارت مرحلة فيه "يبدأ من". عدّل الأرقام في `somabay/index.html` (السعر + نفس الرقم في `data-wa-msg`).

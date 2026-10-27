@@ -1,11 +1,15 @@
 # Homzegy — GA4 events & audiences
 
 ## Setup
-- **GA4 مباشر:** حط الـ Measurement ID في `assets/js/main.js` → `ga4Id: "G-XXXXXXX"`. الأحداث بتتبعت بـ `gtag('event', …)`.
-- **أو GTM:** سيب `ga4Id` فاضي وحط `gtmId`. الأحداث بتتبعت للـ `dataLayer` بنفس الأسماء (`event: "whatsapp_click"` …)، وتعمل لكل واحد Custom Event Trigger + GA4 Event Tag.
-- ماتشغلش الاتنين لنفس الـ GA4 property عشان الأحداث ماتتحسبش مرتين.
+- GTM container `GTM-5B2ZWT3M` متركب في كل الصفحات (`<head>` + `<noscript>` بعد `<body>`).
+- الموقع مش بيحمّل GA4 بنفسه: اعمل في GTM تاج **Google tag** بالـ Measurement ID على All Pages، وتاج **GA4 Event** لكل حدث تحت.
+- كل حدث بيتبعت للـ `dataLayer` بالشكل ده: `{ event: "whatsapp_click", project, page_type, cta_location, phase, unit_type }` — اعمل لكل parameter متغير **Data Layer Variable** بنفس الاسم.
 
-كل حدث معاه تلقائياً: `project` (Homzegy / Somabay / Makadi Heights) و`page_type` (home / project / privacy).
+كل حدث معاه تلقائياً: `project` (Homzegy / Somabay / Makadi Heights) و`page_type` (home / project / privacy / thank-you).
+
+### الفورم وصفحة الشكر
+بعد إرسال الفورم بنجاح، الزائر بيتحوّل لـ `/thank-you/`، وحدث `generate_lead` بيتبعت هناك **مرة واحدة بس** (لو عمل reload مش بيتحسب تاني). Parameters: `lead_project`, `interest`, `form_location`.
+للـ Google Ads conversion: استخدم Custom Event trigger على `generate_lead` (أدق من page view على `/thank-you/`).
 
 ## Events
 
@@ -15,7 +19,7 @@
 | `payment_plan_request` | ضغطة على "اطلب خطة الدفع" (بيتبعت مع `whatsapp_click`) | `cta_location`, `phase`, `unit_type` |
 | `call_click` | أي ضغطة على زرار اتصال | `cta_location` |
 | `form_start` | أول ما الزائر يكتب في الفورم | `form_location` |
-| `generate_lead` | الفورم اتبعت بنجاح | `form_location`, `interest` |
+| `generate_lead` | على صفحة `/thank-you/` بعد إرسال الفورم بنجاح | `lead_project`, `interest`, `form_location` |
 | `form_error` | الإرسال فشل | — |
 | `form_cta_click` | "أو سيب بياناتك ونكلمك" | `cta_location`, `phase` |
 | `view_prices` | سكشن الأسعار ظهر على الشاشة | — |
@@ -25,7 +29,7 @@
 | `section_nav_click` | ضغطة على شريط السكاشن | `section` |
 | `faq_open` | فتح سؤال | `question` |
 
-قيم `cta_location`: `header`, `hero`, `phase_card`, `price_list`, `phase_units`, `ready_units`, `ready_card`, `payment_section`, `home_project_card`, `*_section` (سكشن التواصل), `sticky_bar`, `footer`, `form_success`, `404`.
+قيم `cta_location`: `header`, `hero`, `phase_card`, `price_list`, `phase_units`, `ready_units`, `ready_card`, `payment_section`, `home_project_card`, `*_section` (سكشن التواصل), `sticky_bar`, `footer`, `form_success`, `404`, `thank_you`.
 
 ### Custom dimensions (Admin → Custom definitions → Event scope)
 `project`, `page_type`, `cta_location`, `phase`, `unit_type`, `form_location`, `interest`

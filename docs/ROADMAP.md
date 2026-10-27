@@ -3,9 +3,11 @@
 آخر تحديث: 26 أكتوبر 2026 · الموقع شغال على https://homzegy.com (Hostinger، من فرع `main`)
 
 ## 1. التتبع (أول أولوية — قبل أي إعلان)
-- [ ] Abdo: يعمل GTM container وGA4 property ويبعت `GTM-XXXX` و`G-XXXX`
+- [x] GTM container `GTM-5B2ZWT3M` متركب في كل الصفحات
+- [ ] Abdo: يعمل GA4 property ويحط الـ Google tag في GTM
 - [ ] Abdo: يعمل Google Sheet + Apps Script (`apps-script/README.md`) ويبعت لينك `/exec`
-- [ ] Claude: يحط `gtmId` و`formEndpoint` في `assets/js/main.js`
+- [ ] Claude: يحط `formEndpoint` في `assets/js/main.js`
+- [x] صفحة `/thank-you/` + `generate_lead` بيتبعت منها مرة واحدة
 - [ ] Claude: يجهز ملف GTM container JSON للـ import (GA4 config + event tags لكل الأحداث + triggers + variables)
 - [ ] GA4: تسجيل custom dimensions + تعليم key events (`generate_lead`, `whatsapp_click`, `call_click`, `payment_plan_request`) — `docs/tracking.md`
 - [ ] ربط GA4 بحساب Google Ads + import الـ key events كـ conversions

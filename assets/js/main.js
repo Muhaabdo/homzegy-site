@@ -7,8 +7,7 @@
     whatsapp: "201224044430",          // WhatsApp number, international format, no +
     phone: "+201224044430",            // Call number
     formEndpoint: "",                  // Google Apps Script Web App URL (see apps-script/README.md)
-    ga4Id: "",                         // e.g. G-XXXXXXXXXX  (leave empty if you load GA4 through GTM)
-    gtmId: "",                         // e.g. GTM-XXXXXXX   (optional — use GA4 OR GTM, not both for the same tag)
+    thankYouUrl: "/thank-you/",        // page shown after a successful form submit (generate_lead fires there)
     cookieHideMs: 8000                 // cookie notice auto-hide delay
   };
   window.HOMZEGY = SITE;
@@ -24,31 +23,10 @@
   function sget(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
   function sset(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
 
-  /* ---------- analytics ---------- */
+  /* ---------- analytics: GTM is installed in every page <head>; events go to the dataLayer ---------- */
   window.dataLayer = window.dataLayer || [];
-  if (SITE.ga4Id) {
-    var g = document.createElement("script");
-    g.async = true;
-    g.src = "https://www.googletagmanager.com/gtag/js?id=" + SITE.ga4Id;
-    document.head.appendChild(g);
-    window.gtag = function () { window.dataLayer.push(arguments); };
-    window.gtag("js", new Date());
-    window.gtag("config", SITE.ga4Id, { project: PAGE.project, page_type: PAGE.pageType });
-  }
-  if (SITE.gtmId) {
-    window.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
-    var t = document.createElement("script");
-    t.async = true;
-    t.src = "https://www.googletagmanager.com/gtm.js?id=" + SITE.gtmId;
-    document.head.appendChild(t);
-  }
   function track(name, params) {
-    var p = Object.assign({ project: PAGE.project, page_type: PAGE.pageType }, params || {});
-    if (SITE.ga4Id && typeof window.gtag === "function") {
-      window.gtag("event", name, p);
-    } else {
-      window.dataLayer.push(Object.assign({ event: name }, p));
-    }
+    window.dataLayer.push(Object.assign({ event: name, project: PAGE.project, page_type: PAGE.pageType }, params || {}));
   }
   window.homzegyTrack = track;
 
@@ -250,19 +228,9 @@
       btn.disabled = true; btn.textContent = "جاري الإرسال...";
 
       function done() {
-        track("generate_lead", { form_location: data.form_location, interest: interest });
-        form.hidden = true;
-        var box = form.parentNode.querySelector(".form-done");
-        if (box) {
-          var wa = box.querySelector("[data-wa-after]");
-          if (wa) {
-            var R = "\u200F";
-            wa.href = waUrl([R + "مرحباً، سجلت بياناتي على الموقع.", R + "الاسم: " + data.name, R + "مهتم بـ: " + (interest || PAGE.project)].join("\n"));
-            wa.addEventListener("click", function () { track("whatsapp_click", { cta_location: "form_success" }); });
-          }
-          box.hidden = false;
-          box.focus && box.focus();
-        }
+        // generate_lead fires once on the thank-you page (see below), so reloads don't double count
+        sset("hz_lead", JSON.stringify({ name: data.name, interest: interest, project: PAGE.project, form_location: data.form_location }));
+        location.href = SITE.thankYouUrl + "?ok=1";
       }
       if (!SITE.formEndpoint) { console.warn("[Homzegy] formEndpoint is empty — lead not stored."); done(); return; }
       fetch(SITE.formEndpoint, {
@@ -305,6 +273,20 @@
   }
   if (hdr) window.addEventListener("scroll", function () { if (!hTick) { hTick = true; requestAnimationFrame(onScrollHeader); } }, { passive: true });
   if (menu) menu.addEventListener("toggle", function () { if (menu.open) body.classList.remove("hdr-hide"); });
+
+  /* ---------- thank-you page ---------- */
+  if (PAGE.pageType === "thank-you") {
+    var lead = null;
+    try { lead = JSON.parse(sget("hz_lead") || "null"); } catch (e) { lead = null; }
+    if (lead) {
+      track("generate_lead", { lead_project: lead.project, interest: lead.interest || "", form_location: lead.form_location || "" });
+      try { sessionStorage.removeItem("hz_lead"); } catch (e) {}
+      var R = "\u200F";
+      document.querySelectorAll("[data-wa-after]").forEach(function (wa) {
+        wa.href = waUrl([R + "مرحباً، سجلت بياناتي على الموقع.", R + "الاسم: " + lead.name, R + "مهتم بـ: " + (lead.interest || lead.project)].join("\n"));
+      });
+    }
+  }
 
   /* ---------- misc ---------- */
   document.querySelectorAll("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
