@@ -9,6 +9,12 @@ RewriteCond %{HTTPS} off [OR]
 RewriteCond %{HTTP_HOST} ^www\. [NC]
 RewriteCond %{HTTP_HOST} ^(?:www\.)?(.+)$ [NC]
 RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+# Old WordPress paths: bots probing wp-login/xmlrpc get a plain 410 (no page, no GA hit)
+RewriteRule ^(wp-admin|wp-login\.php|wp-content|wp-includes|wp-json|xmlrpc\.php|wp-config|wp-cron\.php)(/|$) - [G,L]
+RewriteCond %{QUERY_STRING} (^|&)(p|page_id|s)=
+RewriteRule ^$ /? [R=301,L]
+# Old WordPress pages that may still be linked somewhere -> home
+RewriteRule ^(feed|comments/feed|sample-page|hello-world|category/.*|author/.*|tag/.*)/?$ / [R=301,L]
 # Repo-only folders and files are not public
 RewriteRule ^(apps-script|docs)(/|$) - [R=404,L]
 RewriteRule ^(README\.md|\.gitignore)$ - [R=404,L]
