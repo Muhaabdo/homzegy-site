@@ -219,7 +219,9 @@
         form_location: form.getAttribute("data-loc") || "",
         page: location.pathname,
         page_url: location.href,
-        submitted_at: new Date().toISOString()
+        submitted_at: new Date().toISOString(),
+        lang: (document.documentElement.lang || "ar").slice(0, 2),
+        device: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? "Mobile" : (/iPad|Tablet/i.test(navigator.userAgent) ? "Tablet" : "Desktop")
       }, attr);
       delete data._ts;
 
