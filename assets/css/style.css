@@ -151,6 +151,7 @@ html{scroll-padding-top:130px}
 .plist .u-type{direction:ltr;unicode-bidi:isolate;font-weight:500}
 .plist .u-sub{display:none;color:var(--muted);font-size:.8rem}
 .plist .u-cat{display:block;font-weight:600;font-size:1rem}
+.plist .u-cat small{display:block;font-weight:400;font-size:.85rem;color:var(--muted)}
 .plist .u-cat + .u-phase{display:block;margin-top:2px;direction:rtl}
 .plist .u-phase{direction:ltr;unicode-bidi:isolate;color:var(--muted);font-size:.88rem}
 .plist .u-price{font-weight:700;white-space:nowrap}
