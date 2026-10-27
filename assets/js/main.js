@@ -297,6 +297,24 @@
     setTimeout(hide, SITE.cookieHideMs);
   }
 
+  /* ---------- header: hide on scroll down (after hero), show on scroll up; close menu on scroll ---------- */
+  var hdr = document.querySelector(".top");
+  var hero = document.querySelector(".hero");
+  var menu = document.querySelector(".menu");
+  var lastY = window.scrollY, hTick = false;
+  function onScrollHeader() {
+    hTick = false;
+    var y = window.scrollY, dy = y - lastY;
+    if (Math.abs(dy) < 6) return;
+    if (menu && menu.open) menu.open = false;
+    var heroEnd = hero ? hero.offsetTop + hero.offsetHeight - (hdr ? hdr.offsetHeight : 0) : 200;
+    if (dy > 0 && y > heroEnd) body.classList.add("hdr-hide");
+    else if (dy < 0) body.classList.remove("hdr-hide");
+    lastY = y;
+  }
+  if (hdr) window.addEventListener("scroll", function () { if (!hTick) { hTick = true; requestAnimationFrame(onScrollHeader); } }, { passive: true });
+  if (menu) menu.addEventListener("toggle", function () { if (menu.open) body.classList.remove("hdr-hide"); });
+
   /* ---------- misc ---------- */
   document.querySelectorAll("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
   document.querySelectorAll(".menu a").forEach(function (a) {
