@@ -13,3 +13,10 @@ Contact: WhatsApp / phone +20 122 404 4430
 
 - [Home](https://homzegy.com/): About Homzegy and how it works.
 - [Privacy policy](https://homzegy.com/privacy-policy/)
+
+## English version
+
+- [Home (EN)](https://homzegy.com/en/)
+- [Somabay (EN)](https://homzegy.com/en/somabay/)
+- [Makadi Heights (EN)](https://homzegy.com/en/makadi-heights/)
+- [Privacy policy (EN)](https://homzegy.com/en/privacy-policy/)

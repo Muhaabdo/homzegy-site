@@ -3,6 +3,7 @@ Allow: /
 Disallow: /apps-script/
 Disallow: /docs/
 Disallow: /thank-you/
+Disallow: /en/thank-you/
 
 # AI & answer engines — allowed so the site can be cited
 User-agent: GPTBot

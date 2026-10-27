@@ -14,6 +14,19 @@
   /* ====================================================== */
 
   var body = document.body;
+  var EN = (document.documentElement.lang || "").slice(0, 2) === "en";
+  var T = EN ? {
+    waDefault: "Hello, I'd like more details.", less: "Show less", allUnits: "Show all units",
+    errName: "Please enter your name", errPhone: "Please enter a valid mobile number, e.g. +20 101 234 5678",
+    sending: "Sending...", errSend: "Couldn't send. Please try again or message us on WhatsApp.",
+    tyHello: "Hello, I just submitted my details on the website.", tyName: "Name: ", tyInt: "Interested in: ", rlm: ""
+  } : {
+    waDefault: "مرحباً، عايز أعرف تفاصيل أكتر.", less: "اعرض أقل", allUnits: "اعرض كل الوحدات",
+    errName: "اكتب اسمك", errPhone: "اكتب رقم موبايل صحيح، مثال 01012345678",
+    sending: "جاري الإرسال...", errSend: "الإرسال ماكملش. جرّب تاني أو كلمنا واتساب.",
+    tyHello: "مرحباً، سجلت بياناتي على الموقع.", tyName: "الاسم: ", tyInt: "مهتم بـ: ", rlm: "\u200F"
+  };
+  if (EN) SITE.thankYouUrl = "/en/thank-you/";
   var PAGE = {
     project: body.getAttribute("data-project") || "Homzegy",
     pageType: body.getAttribute("data-page") || "page"
@@ -54,7 +67,7 @@
   function waUrl(msg) {
     return "https://wa.me/" + SITE.whatsapp + "?text=" + encodeURIComponent(msg);
   }
-  var defaultMsg = body.getAttribute("data-wa-default") || "مرحباً، عايز أعرف تفاصيل أكتر.";
+  var defaultMsg = body.getAttribute("data-wa-default") || T.waDefault;
   document.querySelectorAll("[data-wa]").forEach(function (a) {
     a.href = waUrl(a.getAttribute("data-wa-msg") || defaultMsg);
     a.target = "_blank";
@@ -94,7 +107,7 @@
     btn.addEventListener("click", function () {
       open = !open;
       extra.forEach(function (c) { c.hidden = !open; });
-      btn.textContent = open ? "اعرض أقل" : label;
+      btn.textContent = open ? T.less : label;
       if (open) { extra[0].querySelector("a, button") && extra[0].scrollIntoView({ block: "nearest" }); track("show_more_phases", {}); }
     });
   });
@@ -118,7 +131,7 @@
       if (empty) empty.hidden = match.length > 0;
       if (more) {
         more.hidden = !limit || match.length <= limit;
-        more.textContent = showAll ? "اعرض أقل" : "اعرض كل الوحدات (" + match.length + ")";
+        more.textContent = showAll ? T.less : T.allUnits + " (" + match.length + ")";
       }
     }
     selects.forEach(function (s) {
@@ -205,8 +218,8 @@
         el.setAttribute("aria-invalid", msg ? "true" : "false");
         if (msg) ok = false;
       }
-      setErr(name, name.value.trim().length < 2 ? "اكتب اسمك" : "");
-      setErr(phone, phoneOK(phone.value) ? "" : "اكتب رقم موبايل صحيح، مثال 01012345678");
+      setErr(name, name.value.trim().length < 2 ? T.errName : "");
+      setErr(phone, phoneOK(phone.value) ? "" : T.errPhone);
       if (!ok) { form.querySelector('[aria-invalid="true"]').focus(); return; }
       if (form.elements.website && form.elements.website.value) return; // honeypot
 
@@ -227,7 +240,7 @@
 
       var btn = form.querySelector("button[type=submit]");
       var label = btn.textContent;
-      btn.disabled = true; btn.textContent = "جاري الإرسال...";
+      btn.disabled = true; btn.textContent = T.sending;
 
       function done() {
         // generate_lead fires once on the thank-you page (see below), so reloads don't double count
@@ -242,7 +255,7 @@
         body: new URLSearchParams(data).toString()
       }).then(done).catch(function () {
         btn.disabled = false; btn.textContent = label;
-        setErr(phone, "الإرسال ماكملش. جرّب تاني أو كلمنا واتساب.");
+        setErr(phone, T.errSend);
         track("form_error", {});
       });
     });
@@ -283,9 +296,9 @@
     if (lead) {
       track("generate_lead", { lead_project: lead.project, interest: lead.interest || "", form_location: lead.form_location || "" });
       try { sessionStorage.removeItem("hz_lead"); } catch (e) {}
-      var R = "\u200F";
+      var R = T.rlm;
       document.querySelectorAll("[data-wa-after]").forEach(function (wa) {
-        wa.href = waUrl([R + "مرحباً، سجلت بياناتي على الموقع.", R + "الاسم: " + lead.name, R + "مهتم بـ: " + (lead.interest || lead.project)].join("\n"));
+        wa.href = waUrl([R + T.tyHello, R + T.tyName + lead.name, R + T.tyInt + (lead.interest || lead.project)].join("\n"));
       });
     }
   }
