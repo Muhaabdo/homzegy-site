@@ -4,15 +4,16 @@
 
 ## 1. التتبع (أول أولوية — قبل أي إعلان)
 - [x] GTM container `GTM-5B2ZWT3M` متركب في كل الصفحات
-- [ ] Abdo: يعمل GA4 property ويحط الـ Google tag في GTM
+- [x] GA4 property (`G-9FY73EPSPH`) + Google tag في GTM
 - [ ] Abdo: يعمل Google Sheet + Apps Script (`apps-script/README.md`) ويبعت لينك `/exec`
 - [ ] Claude: يحط `formEndpoint` في `assets/js/main.js`
 - [x] صفحة `/thank-you/` + `generate_lead` بيتبعت منها مرة واحدة
-- [ ] Claude: يجهز ملف GTM container JSON للـ import (GA4 config + event tags لكل الأحداث + triggers + variables)
-- [ ] GA4: تسجيل custom dimensions + تعليم key events (`generate_lead`, `whatsapp_click`, `call_click`, `payment_plan_request`) — `docs/tracking.md`
-- [ ] ربط GA4 بحساب Google Ads + import الـ key events كـ conversions
-- [ ] Google Ads conversion tag + Conversion Linker في GTM (+ Enhanced Conversions for Leads اختياري)
-- [ ] عمل الـ Audiences في GA4
+- [x] GTM: تاج GA4 للأحداث + Conversion Linker + 3 كونفرجنز جوجل أدز (ليد / واتساب / اتصال) — `docs/gtm/` — Published
+- [x] GA4: 9 custom dimensions، data retention 14 شهر، Google signals
+- [ ] GA4: تعليم key events (`generate_lead`, `whatsapp_click`, `call_click`, `payment_plan_request`) — الأحداث بتظهر في Admin خلال 24 ساعة
+- [ ] ربط GA4 بحساب Google Ads (محتاج تأكيد أنهي حساب) — الكونفرجنز نفسها شغالة من GTM
+- [x] Google Ads conversion tags + Conversion Linker في GTM
+- [x] Audiences: Somabay visitors 30d، Makadi visitors 30d، Viewed prices no contact 14d، Payment plan requesters 60d، Contacted 90d، Leads 180d
 - [ ] تست كامل: GTM Preview + GA4 DebugView + ليد تجريبي يوصل للشيت
 
 ## 2. النسخة الإنجليزية
