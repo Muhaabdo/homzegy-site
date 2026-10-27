@@ -21,7 +21,8 @@
 | `view_prices` | سكشن الأسعار ظهر على الشاشة | — |
 | `view_contact` | سكشن التواصل ظهر على الشاشة | — |
 | `price_filter` | تغيير فلتر المرحلة أو الغرف | `filter`, `value` |
-| `tab_select` | Bayside / Reefside | `tab` |
+| `show_more_phases` | "اعرض باقي المراحل" في Somabay | — |
+| `section_nav_click` | ضغطة على شريط السكاشن | `section` |
 | `faq_open` | فتح سؤال | `question` |
 
 قيم `cta_location`: `header`, `hero`, `phase_card`, `price_list`, `phase_units`, `ready_units`, `ready_card`, `payment_section`, `home_project_card`, `*_section` (سكشن التواصل), `sticky_bar`, `footer`, `form_success`, `404`.

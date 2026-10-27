@@ -107,26 +107,17 @@
     });
   });
 
-  /* ---------- tabs ---------- */
-  document.querySelectorAll("[data-tabs]").forEach(function (list) {
-    var btns = list.querySelectorAll("[role=tab]");
-    btns.forEach(function (b) {
-      b.addEventListener("click", function () {
-        btns.forEach(function (x) {
-          var on = x === b;
-          x.setAttribute("aria-selected", on);
-          x.tabIndex = on ? 0 : -1;
-          var panel = document.getElementById(x.getAttribute("aria-controls"));
-          if (panel) panel.hidden = !on;
-        });
-        track("tab_select", { tab: b.getAttribute("data-label") || b.textContent.trim() });
-      });
-      b.addEventListener("keydown", function (e) {
-        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-        var arr = Array.prototype.slice.call(btns), i = arr.indexOf(b);
-        var next = arr[(i + (e.key === "ArrowLeft" ? 1 : -1) + arr.length) % arr.length];
-        next.focus(); next.click();
-      });
+  /* ---------- show more cards ---------- */
+  document.querySelectorAll("[data-cards]").forEach(function (wrap) {
+    var btn = wrap.querySelector("[data-more-cards]");
+    var extra = wrap.querySelectorAll("[data-extra]");
+    if (!btn || !extra.length) { if (btn) btn.hidden = true; return; }
+    var label = btn.textContent, open = false;
+    btn.addEventListener("click", function () {
+      open = !open;
+      extra.forEach(function (c) { c.hidden = !open; });
+      btn.textContent = open ? "اعرض أقل" : label;
+      if (open) { extra[0].querySelector("a, button") && extra[0].scrollIntoView({ block: "nearest" }); track("show_more_phases", {}); }
     });
   });
 
