@@ -2,6 +2,12 @@
 <html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
+<!-- Consent Mode v2: denied by default in EEA/UK/CH (until the visitor accepts), granted elsewhere -->
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+var hzD={ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied'},hzG={ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'};
+gtag('consent','default',Object.assign({region:["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH"],wait_for_update:500},hzD));
+gtag('consent','default',hzG);
+try{var hzC=localStorage.getItem('hz_consent');if(hzC)gtag('consent','update',hzC==='granted'?hzG:hzD);}catch(e){}</script>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -31,7 +37,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/style.css?v=14">
+<link rel="stylesheet" href="/assets/css/style.css?v=15">
 
 </head>
 <body data-project="Homzegy" data-page="thank-you" data-wa-default="Hello, I just submitted my details on the website.">
@@ -100,8 +106,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </nav>
 <div class="cookie" id="cookie" role="region" aria-label="Cookies">
   <span>We use cookies to analyse traffic and improve your experience. <a href="/en/privacy-policy/">Learn more</a></span>
-  <button type="button">OK</button>
+  <button type="button" class="ck-no" data-ck-no hidden>Decline</button><button type="button" data-ck-ok>OK</button>
 </div>
-<script src="/assets/js/main.js?v=14" defer></script>
+<script src="/assets/js/main.js?v=15" defer></script>
 </body>
 </html>

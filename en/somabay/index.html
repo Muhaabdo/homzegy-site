@@ -2,6 +2,12 @@
 <html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
+<!-- Consent Mode v2: denied by default in EEA/UK/CH (until the visitor accepts), granted elsewhere -->
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+var hzD={ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied'},hzG={ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'};
+gtag('consent','default',Object.assign({region:["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH"],wait_for_update:500},hzD));
+gtag('consent','default',hzG);
+try{var hzC=localStorage.getItem('hz_consent');if(hzC)gtag('consent','update',hzC==='granted'?hzG:hzD);}catch(e){}</script>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -35,7 +41,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="/assets/img/somabay/hero-yacht.webp" fetchpriority="high">
-<link rel="stylesheet" href="/assets/css/style.css?v=14">
+<link rel="stylesheet" href="/assets/css/style.css?v=15">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "RealEstateAgent", "@id": "https://homzegy.com/#org", "name": "Homzegy", "url": "https://homzegy.com/", "logo": "https://homzegy.com/assets/img/brand/apple-touch-icon.png", "image": "https://homzegy.com/assets/img/brand/og-home.jpg", "telephone": "+201224044430", "areaServed": {"@type": "Country", "name": "Egypt"}, "description": "An independent real estate platform in Egypt run by an independent real estate marketer, listing projects with developer prices and payment plans, currently including Somabay and Makadi Heights.", "contactPoint": {"@type": "ContactPoint", "telephone": "+201224044430", "contactType": "sales", "availableLanguage": ["ar", "en"]}}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://homzegy.com/en/"}, {"@type": "ListItem", "position": 2, "name": "Somabay", "item": "https://homzegy.com/en/somabay/"}]}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How much do Somabay properties start from?", "acceptedAnswer": {"@type": "Answer", "text": "Prices start from EGP 15,900,000 on an 8-year installment plan with 5% down payment, for a 1-bedroom chalet in Blanca Gardens, Golf Town Marina Edition or Mazeej, with up to 30% off if you pay cash. Prices are based on the developer's price list as of October 2026."}}, {"@type": "Question", "name": "Is there a cash discount in Somabay?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Up to 30% off the 8-year installment price, and 12.5% off the 5-year installment price. Message us on WhatsApp and we'll calculate the cash price for the unit you like."}}, {"@type": "Question", "name": "What is the down payment and the longest installment plan?", "acceptedAnswer": {"@type": "Answer", "text": "5% down payment, with installments over 5 or 8 years. The unit price depends on the payment plan, and cash is the lowest price. Message us on WhatsApp and we'll send you the payment plan for the unit you like."}}, {"@type": "Question", "name": "How far is Somabay from Hurghada Airport?", "acceptedAnswer": {"@type": "Answer", "text": "About 40 minutes by car from Hurghada International Airport."}}, {"@type": "Question", "name": "Can I live in Somabay all year round?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. It has schools (GEMS International School and the German Kompass school), a supermarket, pharmacy, medical center, gas station and restaurants, with sunshine all year."}}, {"@type": "Question", "name": "What are the maintenance fees in Somabay?", "acceptedAnswer": {"@type": "Answer", "text": "Annual maintenance is about USD 10 per square meter, according to the developer."}}, {"@type": "Question", "name": "What's the difference between Bayside and Reefside?", "acceptedAnswer": {"@type": "Answer", "text": "Bayside has calm water and a sandy beach close to the marina, golf and hotels, and suits families. Reefside has an open beach facing the sea and coral reefs, with wider sea views."}}, {"@type": "Question", "name": "Is Homzegy the developer?", "acceptedAnswer": {"@type": "Answer", "text": "No. Homzegy is an independent real estate marketing platform. The developer is Somabay, and the contract is signed directly with them."}}]}</script>
@@ -387,8 +393,8 @@ Starting price (8-year installments): EGP 31,000,000" data-unit="Villas &amp; tw
 </nav>
 <div class="cookie" id="cookie" role="region" aria-label="Cookies">
   <span>We use cookies to analyse traffic and improve your experience. <a href="/en/privacy-policy/">Learn more</a></span>
-  <button type="button">OK</button>
+  <button type="button" class="ck-no" data-ck-no hidden>Decline</button><button type="button" data-ck-ok>OK</button>
 </div>
-<script src="/assets/js/main.js?v=14" defer></script>
+<script src="/assets/js/main.js?v=15" defer></script>
 </body>
 </html>

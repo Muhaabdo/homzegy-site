@@ -199,6 +199,21 @@
   });
 
   /* ---------- lead forms ---------- */
+  /* Phone → E.164 (+201xxxxxxxxx for Egypt), then SHA-256 hex — Google enhanced conversions format */
+  function e164(v) {
+    var s = String(v || "").replace(/[^\d+]/g, "");
+    if (s.indexOf("00") === 0) s = "+" + s.slice(2);
+    if (/^01\d{9}$/.test(s)) return "+2" + s;
+    if (/^1[0125]\d{8}$/.test(s)) return "+20" + s;
+    if (/^20\d{10}$/.test(s)) return "+" + s;
+    return s.charAt(0) === "+" ? s : "+" + s;
+  }
+  function sha256(str) {
+    if (!(window.crypto && crypto.subtle && window.TextEncoder)) return Promise.reject();
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+    });
+  }
   function phoneOK(v) {
     var s = v.replace(/[\s\-()]/g, "");
     return /^(\+?20|0020)?0?1[0125]\d{8}$/.test(s) || /^(\+|00)\d{8,15}$/.test(s);
@@ -242,9 +257,12 @@
       var label = btn.textContent;
       btn.disabled = true; btn.textContent = T.sending;
 
+      var phoneHash = "";
+      sha256(e164(data.phone)).then(function (h) { phoneHash = h; }, function () {});
       function done() {
-        // generate_lead fires once on the thank-you page (see below), so reloads don't double count
-        sset("hz_lead", JSON.stringify({ name: data.name, interest: interest, project: PAGE.project, form_location: data.form_location }));
+        // generate_lead fires once on the thank-you page (see below), so reloads don't double count.
+        // Only the SHA-256 hash of the phone is kept (for Google Ads enhanced conversions) — never the raw number.
+        sset("hz_lead", JSON.stringify({ name: data.name, interest: interest, project: PAGE.project, form_location: data.form_location, ph: phoneHash }));
         location.href = SITE.thankYouUrl + "?ok=1";
       }
       if (!SITE.formEndpoint) { console.warn("[Homzegy] formEndpoint is empty — lead not stored."); done(); return; }
@@ -261,14 +279,34 @@
     });
   });
 
-  /* ---------- cookie notice: once per session, auto-hide ---------- */
+  /* ---------- cookies / consent ----------
+     Outside Europe: short notice, once per session, auto-hides (consent granted by default in <head>).
+     Europe (EEA/UK/CH, detected by time zone): real Accept / Decline choice, no auto-hide; stored 6 months. */
+  function consentUpdate(granted) {
+    var v = granted ? "granted" : "denied";
+    if (typeof window.gtag === "function") window.gtag("consent", "update", { ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v });
+    lset("hz_consent", v); lset("hz_consent_ts", String(Date.now()));
+  }
+  var tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+  var isEU = /^(Europe\/|Atlantic\/(Reykjavik|Canary|Madeira|Azores|Faroe))/.test(tz) && !/^Europe\/(Istanbul|Moscow|Minsk|Kiev|Kyiv|Simferopol|Volgograd|Kaliningrad|Samara|Ulyanovsk|Astrakhan|Saratov|Kirov|Chisinau)$/.test(tz);
   var ck = document.getElementById("cookie");
-  if (ck && sget("hz_ck") !== "1") {
-    ck.classList.add("show");
-    var hide = function () { ck.classList.remove("show"); sset("hz_ck", "1"); };
-    var okb = ck.querySelector("button");
-    if (okb) okb.addEventListener("click", hide);
-    setTimeout(hide, SITE.cookieHideMs);
+  if (ck) {
+    var okb = ck.querySelector("[data-ck-ok]"), nob = ck.querySelector("[data-ck-no]");
+    var ts = parseInt(lget("hz_consent_ts") || "0", 10);
+    if (isEU) {
+      if (!lget("hz_consent") || Date.now() - ts > 182 * 864e5) {
+        if (okb) okb.textContent = EN ? "Accept" : "موافق";
+        if (nob) nob.hidden = false;
+        ck.classList.add("show", "consent");
+        if (okb) okb.addEventListener("click", function () { consentUpdate(true); ck.classList.remove("show"); });
+        if (nob) nob.addEventListener("click", function () { consentUpdate(false); ck.classList.remove("show"); });
+      }
+    } else if (sget("hz_ck") !== "1") {
+      ck.classList.add("show");
+      var hide = function () { ck.classList.remove("show"); sset("hz_ck", "1"); };
+      if (okb) okb.addEventListener("click", hide);
+      setTimeout(hide, SITE.cookieHideMs);
+    }
   }
 
   /* ---------- header: hide on scroll down (after hero), show on scroll up; close menu on scroll ---------- */
@@ -294,7 +332,9 @@
     var lead = null;
     try { lead = JSON.parse(sget("hz_lead") || "null"); } catch (e) { lead = null; }
     if (lead) {
-      track("generate_lead", { lead_project: lead.project, interest: lead.interest || "", form_location: lead.form_location || "" });
+      var ev = { lead_project: lead.project, interest: lead.interest || "", form_location: lead.form_location || "" };
+      if (lead.ph) ev.user_data = { sha256_phone_number: lead.ph };   // read by the Google Ads conversion tag (enhanced conversions)
+      track("generate_lead", ev);
       try { sessionStorage.removeItem("hz_lead"); } catch (e) {}
       var R = T.rlm;
       document.querySelectorAll("[data-wa-after]").forEach(function (wa) {

@@ -417,3 +417,5 @@ body.hdr-hide .secnav{top:0}
 .ready a.link svg{width:15px;height:15px;flex:0 0 auto}
 .ready a.link span{text-decoration:underline;text-underline-offset:3px}
 .ready .btn-ghost svg{color:var(--wa);width:17px;height:17px}
+.cookie .ck-no{background:transparent;color:var(--navy);box-shadow:inset 0 0 0 1.5px var(--line)}
+.cookie.consent span{flex:1}
