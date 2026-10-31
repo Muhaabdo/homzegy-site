@@ -98,6 +98,18 @@
     });
   });
 
+  /* ---------- blurred prices: click/Enter opens the nearest WhatsApp CTA (row, card or phase) ---------- */
+  document.querySelectorAll("[data-unlock]").forEach(function (el) {
+    function go() {
+      var box = el.closest("tr, li, .card, .phase, .ready, article");
+      var wa = box && box.querySelector("[data-wa]");
+      track("price_unlock_click", { cta_location: wa ? (wa.getAttribute("data-loc") || "") : "", phase: wa ? (wa.getAttribute("data-phase") || "") : "" });
+      if (wa) wa.click();
+    }
+    el.addEventListener("click", go);
+    el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+  });
+
   /* ---------- show more cards ---------- */
   document.querySelectorAll("[data-cards]").forEach(function (wrap) {
     var btn = wrap.querySelector("[data-more-cards]");
