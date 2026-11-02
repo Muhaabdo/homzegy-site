@@ -389,7 +389,14 @@
       return { loc: a.getAttribute("data-loc") || "unknown", phase: a.getAttribute("data-phase") || "", unit: a.getAttribute("data-unit") || "",
                intent: a.getAttribute("data-intent") || "", msg: a.getAttribute("data-wa-msg") || defaultMsg };
     }
-    function close() { g.hidden = true; body.classList.remove("wag-on"); if (lastFocus) try { lastFocus.focus(); } catch (e) {} }
+    var openedAt = 0, submitted = false;
+    function close() {
+      if (g.hidden) return;
+      g.hidden = true; body.classList.remove("wag-on");
+      if (!submitted) track("popup_close", { popup_type: isForm ? "callback" : "whatsapp", cta_location: (src && src.loc) || "",
+        phase: (src && src.phase) || "", unit_type: (src && src.unit) || "", time_open_sec: Math.round((Date.now() - openedAt) / 1000) });
+      if (lastFocus) try { lastFocus.focus(); } catch (e) {}
+    }
     var titleEl = g.querySelector("#wag-t"), titleDef = titleEl ? titleEl.textContent : "";
     var subEl = g.querySelector(".wag-sub"), subDef = subEl ? subEl.textContent : "";
     var isForm = false;
@@ -413,7 +420,8 @@
         ctxEl.textContent = lbl; ctxEl.hidden = !lbl;
         g.hidden = false; body.classList.add("wag-on");
         setTimeout(function () { var n = form.elements.name; if (n) n.focus(); }, 60);
-        track("form_popup_open", { cta_location: src.loc, phase: src.phase, unit_type: src.unit });
+        openedAt = Date.now(); submitted = false;
+        track("form_popup_open", { popup_type: "callback", cta_location: src.loc, phase: src.phase, unit_type: src.unit });
         return;
       }
       lastFocus = a;
@@ -421,7 +429,8 @@
       ctxEl.textContent = label; ctxEl.hidden = !label;
       g.hidden = false; body.classList.add("wag-on");
       setTimeout(function () { var n = form.elements.name; if (n) n.focus(); }, 60);
-      track("wa_gate_open", { cta_location: src.loc, phase: src.phase, unit_type: src.unit });
+      openedAt = Date.now(); submitted = false;
+      track("wa_gate_open", { popup_type: "whatsapp", cta_location: src.loc, phase: src.phase, unit_type: src.unit });
     }
     window.HZ_GATE = { open: open };
     // "Don't use WhatsApp?" → same sheet switches to the call-back form (keeps what was typed, nothing is sent yet)
@@ -432,7 +441,7 @@
       form.querySelectorAll(".err").forEach(function (e) { e.textContent = ""; });
       form.querySelectorAll("[aria-invalid]").forEach(function (e) { e.setAttribute("aria-invalid", "false"); });
       var n = form.elements.name; if (n) (n.value ? (form.elements.email || n) : n).focus();
-      track("form_popup_open", { cta_location: (src && src.loc) || "", phase: (src && src.phase) || "", unit_type: (src && src.unit) || "", via: "wa_gate_switch" });
+      track("form_popup_open", { cta_location: (src && src.loc) || "", phase: (src && src.phase) || "", unit_type: (src && src.unit) || "", popup_type: "callback", via: "wa_gate_switch" });
     });
     g.querySelectorAll("[data-wag-close]").forEach(function (b) { b.addEventListener("click", close); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !g.hidden) close(); });
@@ -472,6 +481,8 @@
         } catch (err) {}
       }
       // Both paths: lead saved → thank-you page. WhatsApp path then opens WhatsApp from the thank-you page.
+      submitted = true;
+      track("popup_submit", { popup_type: mode === "wa" ? "whatsapp" : "callback", cta_location: s0.loc, phase: s0.phase, unit_type: s0.unit });
       var waLink = mode === "wa" ? waUrl(s0.msg + "\n" + T.rlm + T.tyName + data.name) : "";
       if (mode === "wa") sset("hz_wa", JSON.stringify({ name: data.name }));
       function safeHash(v) { return v ? sha256(v).then(function (x) { return x; }, function () { return ""; }) : Promise.resolve(""); }
