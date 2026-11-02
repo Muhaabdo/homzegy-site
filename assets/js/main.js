@@ -465,6 +465,7 @@
         var tt = document.querySelector("[data-ty-title]"), tx = document.querySelector("[data-ty-text]");
         if (tt) tt.textContent = T.tyWaTitle.replace("{name}", lead.name);
         if (tx) tx.textContent = T.tyWaText;
+        document.querySelectorAll(".ty-more, .ty-links").forEach(function (el) { el.hidden = true; });
         document.querySelectorAll("[data-wa-after]").forEach(function (wa) { wa.href = lead.wa; });
         setTimeout(function () { location.href = lead.wa; }, 1800);     // gives GTM time to send the conversion first
       } else {
