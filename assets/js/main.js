@@ -22,7 +22,7 @@
     tyHello: "Hello, I just submitted my details on the website.", tyName: "Name: ", tyInt: "Interested in: ", rlm: "",
     phEg: "01xxxxxxxxx", phIntl: "Mobile number", errPhoneIntl: "Please enter a valid mobile number",
     gatePrice: "Price and more details on WhatsApp",
-    formTitle: "Leave your details and we'll call you", formSub: "Enter your name and number and our team will contact you shortly.",
+    formTitle: "Request a call back", errEmail: "Please enter a valid email or leave it empty", formSub: "Enter your name and number and our team will contact you shortly.",
     tyWaTitle: "Thanks {name}, taking you to WhatsApp…", tyWaText: "Your details are saved. If WhatsApp doesn't open in a few seconds, tap the button below."
   } : {
     waDefault: "مرحباً، عايز أعرف تفاصيل أكتر.", less: "اعرض أقل", allUnits: "اعرض كل الوحدات",
@@ -31,7 +31,7 @@
     tyHello: "مرحباً، سجلت بياناتي على الموقع.", tyName: "الاسم: ", tyInt: "مهتم بـ: ", rlm: "\u200F",
     phEg: "01xxxxxxxxx", phIntl: "رقم الموبايل", errPhoneIntl: "اكتب رقم موبايل صحيح",
     gatePrice: "السعر وتفاصيل أكثر على واتساب",
-    formTitle: "سيب بياناتك ونكلمك", formSub: "اكتب اسمك ورقمك وفريقنا هيتواصل معاك في أقرب وقت.",
+    formTitle: "اطلب مكالمة", errEmail: "اكتب إيميل صحيح أو سيبه فاضي", formSub: "اكتب اسمك ورقمك وفريقنا هيتواصل معاك في أقرب وقت.",
     tyWaTitle: "شكراً يا {name}، بنحوّلك على واتساب…", tyWaText: "بياناتك اتسجلت. لو واتساب ما فتحش خلال ثواني، اضغط على الزرار اللي تحت."
   };
   if (EN) SITE.thankYouUrl = "/en/thank-you/";
@@ -349,6 +349,7 @@
       g.querySelector(".wag-send").hidden = !f;
       g.querySelector("[data-ic-wa]").hidden = f; g.querySelector("[data-ic-form]").hidden = !f;
       if (subEl) subEl.textContent = f ? T.formSub : subDef;
+      var em = g.querySelector("[data-email]"); if (em) em.hidden = !f;
     }
     function open(a, opt) {
       src = ctx(a);
@@ -397,11 +398,13 @@
       var full = fullPhone(form);
       setErr(name, name.value.trim().length < 2 ? T.errName : "");
       setErr(phone, phoneOK(full) ? "" : (/^\+20/.test(full) ? T.errPhone : T.errPhoneIntl));
+      var email = (isForm && form.elements.email) ? form.elements.email.value.trim().toLowerCase() : "";
+      if (isForm && form.elements.email) setErr(form.elements.email, !email || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) ? "" : T.errEmail);
       if (!valid) { form.querySelector('[aria-invalid="true"]').focus(); return; }
       var s0 = src || ctx(document.createElement("a"));
       var interest = [s0.phase, s0.unit].filter(Boolean).join(" · ");
       var data = Object.assign({
-        name: name.value.trim(), phone: full, project: PAGE.project, interest: interest,
+        name: name.value.trim(), phone: full, email: email, project: PAGE.project, interest: interest,
         form_location: (mode === "wa" ? "WhatsApp" : mode === "form" ? "Form" : "Callback") + " · " + s0.loc,
         page: location.pathname, page_url: location.href, submitted_at: new Date().toISOString(),
         lang: (document.documentElement.lang || "ar").slice(0, 2),
@@ -417,8 +420,10 @@
       // Both paths: lead saved → thank-you page. WhatsApp path then opens WhatsApp from the thank-you page.
       var waLink = mode === "wa" ? waUrl(s0.msg + "\n" + T.rlm + T.tyName + data.name) : "";
       if (mode === "wa") sset("hz_wa", JSON.stringify({ name: data.name }));
-      sha256(full).then(function (h) { return h; }, function () { return ""; }).then(function (h) {
-        sset("hz_lead", JSON.stringify({ name: data.name, interest: interest, project: PAGE.project, form_location: data.form_location, ph: h,
+      function safeHash(v) { return v ? sha256(v).then(function (x) { return x; }, function () { return ""; }) : Promise.resolve(""); }
+      Promise.all([safeHash(full), safeHash(email)]).then(function (hs) {
+        var h = hs[0], eh = hs[1];
+        sset("hz_lead", JSON.stringify({ name: data.name, interest: interest, project: PAGE.project, form_location: data.form_location, ph: h, eh: eh,
           wa: waLink, loc: s0.loc, phase: s0.phase, unit: s0.unit, intent: s0.intent }));
         location.href = SITE.thankYouUrl + "?ok=1" + (waLink ? "&via=wa" : "");
       });
@@ -479,7 +484,11 @@
     try { lead = JSON.parse(sget("hz_lead") || "null"); } catch (e) { lead = null; }
     if (lead) {
       var ev = { lead_project: lead.project, interest: lead.interest || "", form_location: lead.form_location || "" };
-      if (lead.ph) ev.user_data = { sha256_phone_number: lead.ph };   // read by the Google Ads conversion tags (enhanced conversions)
+      if (lead.ph || lead.eh) {                                          // read by the Google Ads conversion tags (enhanced conversions)
+        ev.user_data = {};
+        if (lead.ph) ev.user_data.sha256_phone_number = lead.ph;
+        if (lead.eh) ev.user_data.sha256_email_address = lead.eh;
+      }
       try { sessionStorage.removeItem("hz_lead"); } catch (e) {}
       var R = T.rlm;
       if (lead.wa) {

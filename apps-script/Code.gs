@@ -45,6 +45,7 @@ const COLUMNS = [
   ['name', 'Name', 160],
   ['phone', 'Phone', 135],
   ['whatsapp', 'WhatsApp', 105],
+  ['email', 'Email', 190],
   ['project', 'Project', 130],
   ['interest', 'Interest', 170],
   ['status', 'Status', 125],
@@ -92,6 +93,7 @@ function doPost(e) {
       name: name,
       phone: phone,
       whatsapp: '',
+      email: clean_(p.email).toLowerCase(),
       project: clean_(p.project),
       interest: clean_(p.interest) || '—',
       status: 'New',
@@ -152,6 +154,11 @@ function setup() {
     sh = (first.getLastRow() === 0 && first.getName() !== CONFIG.SHEET_SUMMARY) ? first.setName(CONFIG.SHEET_LEADS) : ss.insertSheet(CONFIG.SHEET_LEADS);
   }
   sh.setRightToLeft(false);
+  // Migration: sheets created before the Email column existed → insert it in place so old rows stay aligned
+  if (sh.getLastRow() > 0 && String(sh.getRange(1, COL.email).getValue()) !== 'Email' &&
+      String(sh.getRange(1, COL.whatsapp).getValue()) === 'WhatsApp') {
+    sh.insertColumnBefore(COL.email);
+  }
   if (sh.getMaxColumns() < COLUMNS.length) sh.insertColumnsAfter(sh.getMaxColumns(), COLUMNS.length - sh.getMaxColumns());
   if (sh.getMaxColumns() > COLUMNS.length) sh.deleteColumns(COLUMNS.length + 1, sh.getMaxColumns() - COLUMNS.length);
   if (sh.getMaxRows() < 500) sh.insertRowsAfter(sh.getMaxRows(), 500 - sh.getMaxRows());
@@ -252,7 +259,7 @@ function sendLeadEmail_(lead) {
   // if (!CONFIG.NOTIFY_EMAIL) return;
   // const subject = 'New lead — ' + (lead.project || 'Homzegy') + ' — ' + lead.name;
   // const rows = [
-  //   ['Name', lead.name], ['Phone', lead.phone], ['Project', lead.project], ['Interest', lead.interest],
+  //   ['Name', lead.name], ['Phone', lead.phone], ['Email', lead.email], ['Project', lead.project], ['Interest', lead.interest],
   //   ['Source', lead.source], ['Campaign', lead.campaign], ['Keyword', lead.keyword], ['Page', lead.page],
   //   ['Device', lead.device], ['Repeat', lead.repeat || '—'], ['Lead ID', lead.lead_id]
   // ];

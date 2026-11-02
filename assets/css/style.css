@@ -487,3 +487,10 @@ body.wag-on .cookie,body.wag-on .mbar{display:none!important}
   .plist td.u-cta{display:flex;gap:8px;white-space:normal}
   .plist td.u-cta .btn{flex:1 1 0;margin:0!important;padding-inline:.6rem}
 }
+@media (max-width:760px){
+  .plist td.u-cta .btn{white-space:normal;line-height:1.25;font-size:.84rem;gap:.4rem;padding-block:.65rem;text-align:center}
+  .plist td.u-cta .btn svg{width:16px;height:16px}
+}
+@media (max-width:760px){
+  .plist td.u-cta .btn{white-space:nowrap;font-size:.8rem;padding-inline:.45rem;gap:.35rem;letter-spacing:-.1px}
+}
