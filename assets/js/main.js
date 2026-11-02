@@ -559,7 +559,8 @@
       if (lead.wa) {
         // WhatsApp gate lead → WhatsApp conversion, then open WhatsApp automatically
         ev.cta_location = lead.loc || ""; ev.phase = lead.phase || ""; ev.unit_type = lead.unit || "";
-        track("whatsapp_click", ev);
+        track("generate_lead", Object.assign({ lead_type: "whatsapp" }, ev));   // every thank-you lead = "Form Lead (thank-you)" (primary goal)
+        track("whatsapp_click", ev);                                          // + WhatsApp Click (keep as secondary in Ads)
         if (lead.intent === "payment_plan") track("payment_plan_request", { cta_location: lead.loc || "", phase: lead.phase || "", unit_type: lead.unit || "" });
         var tt = document.querySelector("[data-ty-title]"), tx = document.querySelector("[data-ty-text]");
         if (tt) tt.textContent = T.tyWaTitle.replace("{name}", lead.name);
@@ -568,7 +569,7 @@
         document.querySelectorAll("[data-wa-after]").forEach(function (wa) { wa.href = lead.wa; });
         setTimeout(function () { location.href = lead.wa; }, 1800);     // gives GTM time to send the conversion first
       } else {
-        track("generate_lead", ev);
+        track("generate_lead", Object.assign({ lead_type: "callback" }, ev));
         document.querySelectorAll("[data-wa-after]").forEach(function (wa) {
           wa.href = waUrl([R + T.tyHello, R + T.tyName + lead.name, R + T.tyInt + (lead.interest || lead.project)].join("\n"));
         });
