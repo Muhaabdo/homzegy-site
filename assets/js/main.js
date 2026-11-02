@@ -6,7 +6,7 @@
   var SITE = {
     whatsapp: "201224044430",          // WhatsApp number, international format, no +
     phone: "+201224044430",            // Call number
-    formEndpoint: "https://script.google.com/macros/s/AKfycby5Y6Q8TkXai2f3ZDf0QUXTCtr9QqQOO7gNpWNrmh8sQwisHkUXwlgBSHKmQtvKLb0q/exec",                  // Google Apps Script Web App URL (see apps-script/README.md)
+    formEndpoint: "https://script.google.com/macros/s/AKfycbx9Z9_awFV8kVmmFI51NPHlN7x3Yy4uWisdlUY_HGQFI9j1E8gzCRdKEkGZgYpTjBx3/exec",                  // Google Apps Script Web App URL (see apps-script/README.md)
     thankYouUrl: "/thank-you/",        // page shown after a successful form submit (generate_lead fires there)
     cookieHideMs: 8000                 // cookie notice auto-hide delay
   };
