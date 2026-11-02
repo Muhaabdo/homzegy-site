@@ -17,7 +17,7 @@
   var EN = (document.documentElement.lang || "").slice(0, 2) === "en";
   var T = EN ? {
     waDefault: "Hello, I'd like more details.", less: "Show less", allUnits: "Show all units",
-    errName: "Please enter your name", errPhone: "Please enter a valid mobile number, e.g. +20 101 234 5678",
+    errName: "Please enter your name", errPhone: "Please enter a valid mobile number, e.g. 1012345678",
     sending: "Sending...", errSend: "Couldn't send. Please try again or message us on WhatsApp.",
     tyHello: "Hello, I just submitted my details on the website.", tyName: "Name: ", tyInt: "Interested in: ", rlm: "",
     phEg: "01xxxxxxxxx", phIntl: "Mobile number", errPhoneIntl: "Please enter a valid mobile number",
@@ -374,6 +374,16 @@
       track("wa_gate_open", { cta_location: src.loc, phase: src.phase, unit_type: src.unit });
     }
     window.HZ_GATE = { open: open };
+    // "Don't use WhatsApp?" → same sheet switches to the call-back form (keeps what was typed, nothing is sent yet)
+    var sw = g.querySelector("[data-wag-switch]");
+    if (sw) sw.addEventListener("click", function () {
+      setMode(true);
+      if (titleEl) titleEl.textContent = T.formTitle;
+      form.querySelectorAll(".err").forEach(function (e) { e.textContent = ""; });
+      form.querySelectorAll("[aria-invalid]").forEach(function (e) { e.setAttribute("aria-invalid", "false"); });
+      var n = form.elements.name; if (n) (n.value ? (form.elements.email || n) : n).focus();
+      track("form_popup_open", { cta_location: (src && src.loc) || "", phase: (src && src.phase) || "", unit_type: (src && src.unit) || "", via: "wa_gate_switch" });
+    });
     g.querySelectorAll("[data-wag-close]").forEach(function (b) { b.addEventListener("click", close); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !g.hidden) close(); });
     form.querySelectorAll("button[type=submit]").forEach(function (b) {
