@@ -535,8 +535,8 @@ body.wag-on .cookie,body.wag-on .mbar{display:none!important}
   .tcard .ph{width:96px;height:96px;min-height:0;aspect-ratio:1/1;border-radius:14px}
   .tcard .ph img{object-fit:cover}
   .tcard .body{padding:0}
-  .tcard:nth-child(1) .ph img{object-position:60% 55%}
-  .tcard:nth-child(2) .ph img{object-position:45% 60%}
+  .tcard:nth-child(1) .ph img{object-position:40% 50%}
+  .tcard:nth-child(2) .ph img{object-position:38% 50%}
   .tcard:nth-child(3) .ph img{object-position:40% 45%}
   .tcard:nth-child(4) .ph img{object-position:55% 50%}
 }
