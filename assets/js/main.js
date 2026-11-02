@@ -239,18 +239,68 @@
       return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
     });
   }
-  /* Phone = country-code select + number. A number typed with its own + / 00 prefix wins over the select. */
-  var TZ_CC = { "Africa/Cairo": "+20", "Asia/Riyadh": "+966", "Asia/Dubai": "+971", "Asia/Kuwait": "+965", "Asia/Qatar": "+974",
-    "Asia/Bahrain": "+973", "Asia/Muscat": "+968", "Asia/Amman": "+962", "Asia/Beirut": "+961", "Europe/London": "+44",
-    "Europe/Berlin": "+49", "Europe/Rome": "+39", "Europe/Paris": "+33", "Europe/Amsterdam": "+31", "Europe/Zurich": "+41",
-    "Europe/Vienna": "+43", "Europe/Brussels": "+32", "Europe/Warsaw": "+48", "Europe/Prague": "+420", "Europe/Stockholm": "+46",
-    "Europe/Moscow": "+7", "Europe/Kiev": "+380", "Europe/Kyiv": "+380" };
+  /* Phone = searchable country picker (all countries) + number. A number typed with its own + / 00 prefix wins. */
+  var CC_DATA = "AF93 AL355 DZ213 AS1684 AD376 AO244 AI1264 AG1268 AR54 AM374 AW297 AU61 AT43 AZ994 BS1242 BH973 BD880 BB1246 BY375 BE32 BZ501 BJ229 BM1441 BT975 BO591 BA387 BW267 BR55 BN673 BG359 BF226 BI257 KH855 CM237 CA1 CV238 KY1345 CF236 TD235 CL56 CN86 CO57 KM269 CG242 CD243 CK682 CR506 CI225 HR385 CU53 CW599 CY357 CZ420 DK45 DJ253 DM1767 DO1809 EC593 EG20 SV503 GQ240 ER291 EE372 SZ268 ET251 FK500 FO298 FJ679 FI358 FR33 GF594 PF689 GA241 GM220 GE995 DE49 GH233 GI350 GR30 GL299 GD1473 GP590 GU1671 GT502 GG44 GN224 GW245 GY592 HT509 HN504 HK852 HU36 IS354 IN91 ID62 IR98 IQ964 IE353 IM44 IL972 IT39 JM1876 JP81 JE44 JO962 KZ7 KE254 KI686 XK383 KW965 KG996 LA856 LV371 LB961 LS266 LR231 LY218 LI423 LT370 LU352 MO853 MG261 MW265 MY60 MV960 ML223 MT356 MH692 MQ596 MR222 MU230 YT262 MX52 FM691 MD373 MC377 MN976 ME382 MS1664 MA212 MZ258 MM95 NA264 NR674 NP977 NL31 NC687 NZ64 NI505 NE227 NG234 KP850 MK389 NO47 OM968 PK92 PW680 PS970 PA507 PG675 PY595 PE51 PH63 PL48 PT351 PR1787 QA974 RE262 RO40 RU7 RW250 KN1869 LC1758 VC1784 WS685 SM378 ST239 SA966 SN221 RS381 SC248 SL232 SG65 SX1721 SK421 SI386 SB677 SO252 ZA27 KR82 SS211 ES34 LK94 SD249 SR597 SE46 CH41 SY963 TW886 TJ992 TZ255 TH66 TL670 TG228 TO676 TT1868 TN216 TR90 TM993 TC1649 TV688 UG256 UA380 AE971 GB44 US1 UY598 UZ998 VU678 VA39 VE58 VN84 VG1284 VI1340 YE967 ZM260 ZW263 BQ599 BL590 MF590 PM508 SH290 WF681 NU683 TK690 NF672 MP1670 AX358 SJ47 EH212";
+  var CC_TOP = ["EG", "SA", "AE", "KW", "QA", "BH", "OM", "JO", "GB", "DE", "IT", "FR", "NL", "CH", "RU", "UA", "CA", "US"];
+  var TZ_ISO = { "Africa/Cairo": "EG", "Asia/Riyadh": "SA", "Asia/Dubai": "AE", "Asia/Kuwait": "KW", "Asia/Qatar": "QA", "Asia/Bahrain": "BH",
+    "Asia/Muscat": "OM", "Asia/Amman": "JO", "Asia/Beirut": "LB", "Asia/Baghdad": "IQ", "Asia/Damascus": "SY", "Africa/Tripoli": "LY",
+    "Africa/Tunis": "TN", "Africa/Algiers": "DZ", "Africa/Casablanca": "MA", "Africa/Khartoum": "SD", "Europe/London": "GB", "Europe/Dublin": "IE",
+    "Europe/Berlin": "DE", "Europe/Rome": "IT", "Europe/Paris": "FR", "Europe/Amsterdam": "NL", "Europe/Zurich": "CH", "Europe/Vienna": "AT",
+    "Europe/Brussels": "BE", "Europe/Warsaw": "PL", "Europe/Prague": "CZ", "Europe/Stockholm": "SE", "Europe/Oslo": "NO", "Europe/Copenhagen": "DK",
+    "Europe/Helsinki": "FI", "Europe/Madrid": "ES", "Europe/Lisbon": "PT", "Europe/Athens": "GR", "Europe/Budapest": "HU", "Europe/Bucharest": "RO",
+    "Europe/Sofia": "BG", "Europe/Moscow": "RU", "Europe/Kiev": "UA", "Europe/Kyiv": "UA", "Europe/Minsk": "BY", "Europe/Istanbul": "TR",
+    "America/Toronto": "CA", "America/Vancouver": "CA", "America/Montreal": "CA", "America/Edmonton": "CA", "America/Winnipeg": "CA",
+    "America/Halifax": "CA", "America/Regina": "CA", "America/St_Johns": "CA" };
+  var CC = CC_DATA.split(" ").map(function (t) { return { iso: t.slice(0, 2), dial: "+" + t.slice(2) }; });
+  var ccByIso = {}; CC.forEach(function (c) { ccByIso[c.iso] = c; });
+  function regionNamer(l) { try { return new Intl.DisplayNames([l], { type: "region" }); } catch (e) { return null; } }
+  var nmLocal = regionNamer(EN ? "en" : "ar"), nmEn = regionNamer("en"), nmAr = regionNamer("ar");
+  CC.forEach(function (c) {
+    var a = "", b = "", l = "";
+    try { l = nmLocal ? nmLocal.of(c.iso) : c.iso; a = nmEn ? nmEn.of(c.iso) : ""; b = nmAr ? nmAr.of(c.iso) : ""; } catch (e) { l = c.iso; }
+    c.name = l || c.iso; c.key = (a + " " + b + " " + c.iso + " " + c.dial).toLowerCase();
+  });
+  function flag(iso) { return String.fromCodePoint.apply(null, iso.split("").map(function (ch) { return 127397 + ch.charCodeAt(0); })); }
+  var ccSorted = CC.slice().sort(function (x, y) { return x.name.localeCompare(y.name, EN ? "en" : "ar"); });
   var ccTz = ""; try { ccTz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
-  var CC_DEFAULT = TZ_CC[ccTz] || (/^America\//.test(ccTz) ? "+1" : "+20");
-  document.querySelectorAll(".phone-in").forEach(function (w) {
-    var sel = w.querySelector("select"), inp = w.querySelector("input");
-    function ph() { inp.placeholder = sel.value === "+20" ? T.phEg : T.phIntl; }
-    if (sel) { sel.value = CC_DEFAULT; if (sel.value !== CC_DEFAULT) sel.selectedIndex = 0; sel.addEventListener("change", ph); ph(); }
+  var CC_DEFAULT_ISO = TZ_ISO[ccTz] || (/^America\//.test(ccTz) ? "US" : "EG");
+  document.querySelectorAll("[data-cc]").forEach(function (w) {
+    var btn = w.querySelector(".cc-btn"), hid = w.querySelector("input[name=cc]"), pop = w.querySelector(".cc-pop");
+    var q = w.querySelector(".cc-q"), list = w.querySelector(".cc-list"), inp = w.closest(".phone-in").querySelector("input[name=phone]");
+    var built = false, active = -1;
+    function set(iso) {
+      var c = ccByIso[iso] || ccByIso.EG;
+      hid.value = c.dial; hid.setAttribute("data-iso", c.iso);
+      btn.querySelector(".cc-flag").textContent = flag(c.iso);
+      btn.querySelector(".cc-dial").textContent = c.dial;
+      btn.setAttribute("title", c.name);
+      inp.placeholder = c.iso === "EG" ? T.phEg : T.phIntl;
+    }
+    function row(c) { return '<li role="option" data-iso="' + c.iso + '"><span class="f">' + flag(c.iso) + '</span><span class="n">' + c.name + '</span><span class="d">' + c.dial + "</span></li>"; }
+    function render(term) {
+      term = (term || "").trim().toLowerCase().replace(/^00/, "+");
+      var items = term ? ccSorted.filter(function (c) { return c.key.indexOf(term) > -1 || c.name.toLowerCase().indexOf(term) > -1; })
+                       : CC_TOP.map(function (i) { return ccByIso[i]; }).concat([null], ccSorted);
+      list.innerHTML = items.length ? items.map(function (c) { return c ? row(c) : '<li class="sep" aria-hidden="true"></li>'; }).join("")
+                                    : '<li class="none">' + (EN ? "No match" : "مفيش نتيجة") + "</li>";
+      active = -1;
+    }
+    function open() { if (!built) { render(""); built = true; } pop.hidden = false; btn.setAttribute("aria-expanded", "true"); q.value = ""; render(""); setTimeout(function () { q.focus(); try { pop.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e) {} }, 30); }
+    function close() { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+    function pick(iso) { set(iso); close(); inp.focus(); }
+    btn.addEventListener("click", function () { pop.hidden ? open() : close(); });
+    q.addEventListener("input", function () { render(q.value); });
+    q.addEventListener("keydown", function (e) {
+      var opts = list.querySelectorAll("li[data-iso]");
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault(); active = Math.max(0, Math.min(opts.length - 1, active + (e.key === "ArrowDown" ? 1 : -1)));
+        opts.forEach(function (o, k) { o.classList.toggle("on", k === active); }); if (opts[active]) opts[active].scrollIntoView({ block: "nearest" });
+      } else if (e.key === "Enter") { e.preventDefault(); var o = opts[active >= 0 ? active : 0]; if (o) pick(o.getAttribute("data-iso")); }
+      else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(); btn.focus(); }
+    });
+    list.addEventListener("click", function (e) { var li = e.target.closest("li[data-iso]"); if (li) pick(li.getAttribute("data-iso")); });
+    document.addEventListener("click", function (e) { if (!pop.hidden && !w.contains(e.target)) close(); });
+    set(CC_DEFAULT_ISO);
   });
   function fullPhone(form) {
     var n = String(form.elements.phone.value || "").replace(/[^\d+]/g, "");

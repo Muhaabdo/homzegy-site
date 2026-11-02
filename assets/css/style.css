@@ -540,3 +540,25 @@ body.wag-on .cookie,body.wag-on .mbar{display:none!important}
   .tcard:nth-child(3) .ph img{object-position:40% 45%}
   .tcard:nth-child(4) .ph img{object-position:55% 50%}
 }
+
+/* ---------- searchable country-code picker ---------- */
+.cc{position:relative;flex:0 0 auto}
+.cc-btn{height:100%;min-height:48px;display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:1rem;padding:0 .7rem;border-radius:var(--r-sm);border:1.5px solid #2C4C63;background:#0B2E48;color:#fff;cursor:pointer;white-space:nowrap}
+.cc-btn svg{width:14px;height:14px;opacity:.7}
+.cc-btn:focus-visible{outline:none;border-color:var(--teal)}
+.cc-flag{font-size:1.15rem;line-height:1}
+.wag .cc-btn{background:#fff;color:var(--ink);border-color:var(--line)}
+.cc-pop{position:absolute;top:calc(100% + 6px);left:0;z-index:90;width:min(320px,calc(100vw - 48px));background:#fff;color:var(--ink);border-radius:14px;box-shadow:0 14px 40px rgba(7,31,48,.28);padding:8px;direction:ltr}
+.cc-q{width:100%;font:inherit;font-size:.95rem;padding:.6rem .8rem!important;border:1.5px solid var(--line)!important;border-radius:10px;background:#fff!important;color:var(--ink)!important;margin-bottom:6px}
+.cc-q:focus{border-color:var(--teal)!important;outline:none}
+.cc-list{list-style:none;margin:0;padding:0;max-height:260px;overflow:auto;overscroll-behavior:contain}
+.cc-list li{display:flex;align-items:center;gap:10px;padding:.5rem .6rem;border-radius:8px;cursor:pointer;font-size:.92rem}
+.cc-list li:hover,.cc-list li.on{background:var(--sand-2)}
+.cc-list li .f{font-size:1.15rem;width:1.4em;text-align:center}
+.cc-list li .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+[dir=rtl] .cc-list li .n{direction:rtl;text-align:right}
+.cc-list li .d{color:var(--muted);font-variant-numeric:tabular-nums}
+.cc-list li.sep{height:1px;padding:0;margin:4px 0;background:var(--line-2);cursor:default}
+.cc-list li.none{color:var(--muted);cursor:default}
+.phone-in{align-items:stretch}
+@media (max-width:640px){ .cc-list{max-height:38vh} }
