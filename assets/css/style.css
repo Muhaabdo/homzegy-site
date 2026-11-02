@@ -429,3 +429,38 @@ body.hdr-hide .secnav{top:0}
 .pz:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 .phase-from .pz{margin-inline:6px}
 .phase-from .pz-hint{font-size:.9rem}
+
+/* ---------- phone field: country code + number ---------- */
+.phone-in{display:flex;gap:6px;direction:ltr}
+.phone-in select{flex:0 0 auto;width:auto!important;min-width:96px;padding-inline:.6rem!important;cursor:pointer}
+.phone-in input{flex:1 1 auto;min-width:0;text-align:left!important}
+
+/* ---------- WhatsApp gate (sheet on mobile, dialog on desktop) ---------- */
+body.wag-on{overflow:hidden}
+.wag{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:16px}
+.wag[hidden]{display:none}
+.wag-back{position:absolute;inset:0;background:rgba(7,31,48,.62)}
+.wag-box{position:relative;width:100%;max-width:420px;max-height:calc(100dvh - 32px);overflow:auto;background:#fff;color:var(--ink);border-radius:20px;padding:26px 22px 18px;box-shadow:0 24px 60px rgba(7,31,48,.35)}
+.wag-x{position:absolute;top:10px;inset-inline-end:10px;width:36px;height:36px;border:0;border-radius:50%;background:var(--sand-2);color:var(--navy);font-size:1.4rem;line-height:1;cursor:pointer}
+.wag-ic{width:48px;height:48px;border-radius:50%;background:#E3F3EA;color:var(--wa);display:grid;place-items:center;font-size:1.4rem;font-weight:700;margin-bottom:10px}
+.wag-ic svg{width:26px;height:26px}
+.wag h3{font-size:1.2rem;line-height:1.4;margin:0 0 4px;padding-inline-end:30px}
+.wag-ctx{display:inline-block;margin:4px 0 6px;background:var(--sand-2);border-radius:999px;padding:.15rem .7rem;font-size:.82rem;font-weight:600;direction:ltr;unicode-bidi:isolate}
+.wag-sub{font-size:.85rem;color:var(--muted);margin:0 0 14px;line-height:1.6}
+.wag .fields{gap:10px;margin-bottom:14px}
+.wag .fields label{color:var(--navy);font-weight:600}
+.wag .fields input,.wag .fields select{background:#fff;color:var(--ink);border-color:var(--line)}
+.wag .fields input::placeholder{color:#93A3AE}
+.wag .err{color:#B42318;font-size:.8rem;min-height:0}
+.wag-go{width:100%}
+.wag-alt{display:block;width:100%;margin-top:10px;background:none;border:0;font:inherit;font-size:.88rem;font-weight:600;color:var(--navy);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:.4rem}
+.wag .consent{font-size:.72rem;color:var(--muted);text-align:center;margin:8px 0 0}
+.wag .consent a{color:inherit}
+.wag-ok{text-align:center;padding:10px 0 6px}
+.wag-ok .wag-ic{margin-inline:auto}
+.wag-ok p{color:var(--muted);font-size:.9rem;margin:0 0 14px}
+@media (max-width:640px){
+  .wag{align-items:flex-end;padding:0}
+  .wag-box{max-width:none;border-radius:20px 20px 0 0;max-height:92dvh;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+}
+body.wag-on .cookie,body.wag-on .mbar{display:none!important}

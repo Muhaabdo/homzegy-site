@@ -19,12 +19,14 @@
     waDefault: "Hello, I'd like more details.", less: "Show less", allUnits: "Show all units",
     errName: "Please enter your name", errPhone: "Please enter a valid mobile number, e.g. +20 101 234 5678",
     sending: "Sending...", errSend: "Couldn't send. Please try again or message us on WhatsApp.",
-    tyHello: "Hello, I just submitted my details on the website.", tyName: "Name: ", tyInt: "Interested in: ", rlm: ""
+    tyHello: "Hello, I just submitted my details on the website.", tyName: "Name: ", tyInt: "Interested in: ", rlm: "",
+    phEg: "01xxxxxxxxx", phIntl: "Mobile number", errPhoneIntl: "Please enter a valid mobile number"
   } : {
     waDefault: "مرحباً، عايز أعرف تفاصيل أكتر.", less: "اعرض أقل", allUnits: "اعرض كل الوحدات",
     errName: "اكتب اسمك", errPhone: "اكتب رقم موبايل صحيح، مثال 01012345678",
     sending: "جاري الإرسال...", errSend: "الإرسال ماكملش. جرّب تاني أو كلمنا واتساب.",
-    tyHello: "مرحباً، سجلت بياناتي على الموقع.", tyName: "الاسم: ", tyInt: "مهتم بـ: ", rlm: "\u200F"
+    tyHello: "مرحباً، سجلت بياناتي على الموقع.", tyName: "الاسم: ", tyInt: "مهتم بـ: ", rlm: "\u200F",
+    phEg: "01xxxxxxxxx", phIntl: "رقم الموبايل", errPhoneIntl: "اكتب رقم موبايل صحيح"
   };
   if (EN) SITE.thankYouUrl = "/en/thank-you/";
   var PAGE = {
@@ -72,14 +74,15 @@
     a.href = waUrl(a.getAttribute("data-wa-msg") || defaultMsg);
     a.target = "_blank";
     a.rel = "noopener";
-    a.addEventListener("click", function () {
-      var p = {
-        cta_location: a.getAttribute("data-loc") || "unknown",
-        phase: a.getAttribute("data-phase") || "",
-        unit_type: a.getAttribute("data-unit") || ""
-      };
-      track("whatsapp_click", p);
-      if (a.getAttribute("data-intent") === "payment_plan") track("payment_plan_request", p);
+    // thank-you page link goes straight to WhatsApp; every other WhatsApp button opens the gate (see "WhatsApp gate")
+    if (a.hasAttribute("data-wa-after")) {
+      a.addEventListener("click", function () { track("whatsapp_open", { cta_location: a.getAttribute("data-loc") || "" }); });
+      return;
+    }
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (window.HZ_GATE) window.HZ_GATE.open(a);
+      else window.open(a.href, "_blank");
     });
   });
   document.querySelectorAll("[data-call]").forEach(function (a) {
@@ -226,9 +229,30 @@
       return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
     });
   }
-  function phoneOK(v) {
-    var s = v.replace(/[\s\-()]/g, "");
-    return /^(\+?20|0020)?0?1[0125]\d{8}$/.test(s) || /^(\+|00)\d{8,15}$/.test(s);
+  /* Phone = country-code select + number. A number typed with its own + / 00 prefix wins over the select. */
+  var TZ_CC = { "Africa/Cairo": "+20", "Asia/Riyadh": "+966", "Asia/Dubai": "+971", "Asia/Kuwait": "+965", "Asia/Qatar": "+974",
+    "Asia/Bahrain": "+973", "Asia/Muscat": "+968", "Asia/Amman": "+962", "Asia/Beirut": "+961", "Europe/London": "+44",
+    "Europe/Berlin": "+49", "Europe/Rome": "+39", "Europe/Paris": "+33", "Europe/Amsterdam": "+31", "Europe/Zurich": "+41",
+    "Europe/Vienna": "+43", "Europe/Brussels": "+32", "Europe/Warsaw": "+48", "Europe/Prague": "+420", "Europe/Stockholm": "+46",
+    "Europe/Moscow": "+7", "Europe/Kiev": "+380", "Europe/Kyiv": "+380" };
+  var ccTz = ""; try { ccTz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+  var CC_DEFAULT = TZ_CC[ccTz] || (/^America\//.test(ccTz) ? "+1" : "+20");
+  document.querySelectorAll(".phone-in").forEach(function (w) {
+    var sel = w.querySelector("select"), inp = w.querySelector("input");
+    function ph() { inp.placeholder = sel.value === "+20" ? T.phEg : T.phIntl; }
+    if (sel) { sel.value = CC_DEFAULT; if (sel.value !== CC_DEFAULT) sel.selectedIndex = 0; sel.addEventListener("change", ph); ph(); }
+  });
+  function fullPhone(form) {
+    var n = String(form.elements.phone.value || "").replace(/[^\d+]/g, "");
+    var cc = form.elements.cc ? form.elements.cc.value : "+20";
+    if (n.charAt(0) === "+") return n;
+    if (n.indexOf("00") === 0) return "+" + n.slice(2);
+    if (cc === "+20" && /^20(1\d{9})$/.test(n)) return "+" + n;
+    return cc + n.replace(/^0+/, "");
+  }
+  function phoneOK(full) {
+    if (/^\+20/.test(full)) return /^\+201[0125]\d{8}$/.test(full);
+    return /^\+\d{7,15}$/.test(full);
   }
   document.querySelectorAll("form[data-lead-form]").forEach(function (form) {
     var started = false;
@@ -240,20 +264,21 @@
       e.preventDefault();
       var name = form.elements.name, phone = form.elements.phone, ok = true;
       function setErr(el, msg) {
-        var box = el.parentNode.querySelector(".err");
+        var holder = el.closest("[data-field]") || el.parentNode, box = holder.querySelector(".err");
         if (box) box.textContent = msg;
         el.setAttribute("aria-invalid", msg ? "true" : "false");
         if (msg) ok = false;
       }
       setErr(name, name.value.trim().length < 2 ? T.errName : "");
-      setErr(phone, phoneOK(phone.value) ? "" : T.errPhone);
+      var full = fullPhone(form);
+      setErr(phone, phoneOK(full) ? "" : (/^\+20/.test(full) ? T.errPhone : T.errPhoneIntl));
       if (!ok) { form.querySelector('[aria-invalid="true"]').focus(); return; }
       if (form.elements.website && form.elements.website.value) return; // honeypot
 
       var interest = form.elements.interest ? form.elements.interest.value : "";
       var data = Object.assign({
         name: name.value.trim(),
-        phone: phone.value.trim(),
+        phone: full,
         project: PAGE.project,
         interest: interest,
         form_location: form.getAttribute("data-loc") || "",
@@ -270,7 +295,7 @@
       btn.disabled = true; btn.textContent = T.sending;
 
       var phoneHash = "";
-      sha256(e164(data.phone)).then(function (h) { phoneHash = h; }, function () {});
+      sha256(data.phone).then(function (h) { phoneHash = h; }, function () {});
       function done() {
         // generate_lead fires once on the thank-you page (see below), so reloads don't double count.
         // Only the SHA-256 hash of the phone is kept (for Google Ads enhanced conversions) — never the raw number.
@@ -290,6 +315,93 @@
       });
     });
   });
+
+  /* ---------- WhatsApp gate ----------
+     Every WhatsApp button opens a short sheet (name + phone) before WhatsApp, so a lead is saved even if the visitor
+     never sends the message. "Continue on WhatsApp" → saves lead + opens WhatsApp + fires whatsapp_click (Ads conversion).
+     "Call me instead" → saves lead + thank-you page (generate_lead). Once submitted in a session, buttons go straight to WhatsApp. */
+  (function () {
+    var g = document.getElementById("wa-gate");
+    if (!g) return;
+    var form = g.querySelector("[data-wag-form]"), ok = g.querySelector("[data-wag-ok]"), link = g.querySelector("[data-wag-link]");
+    var ctxEl = g.querySelector("[data-wag-ctx]"), src = null, lastFocus = null, mode = "wa";
+    function ctx(a) {
+      return { loc: a.getAttribute("data-loc") || "unknown", phase: a.getAttribute("data-phase") || "", unit: a.getAttribute("data-unit") || "",
+               intent: a.getAttribute("data-intent") || "", msg: a.getAttribute("data-wa-msg") || defaultMsg };
+    }
+    function close() { g.hidden = true; body.classList.remove("wag-on"); if (lastFocus) try { lastFocus.focus(); } catch (e) {} }
+    function open(a) {
+      src = ctx(a);
+      var known = null; try { known = JSON.parse(sget("hz_wa") || "null"); } catch (e) {}
+      if (known) {                                   // already gave their number this session → straight to WhatsApp
+        window.open(waUrl(src.msg + "\n" + T.rlm + T.tyName + known.name), "_blank");
+        track("whatsapp_open", { cta_location: src.loc, phase: src.phase, unit_type: src.unit });
+        return;
+      }
+      lastFocus = a;
+      var label = [src.phase, src.unit].filter(Boolean).filter(function (v, i, arr) { return arr.indexOf(v) === i; }).join(" · ");
+      ctxEl.textContent = label; ctxEl.hidden = !label;
+      form.hidden = false; ok.hidden = true;
+      g.hidden = false; body.classList.add("wag-on");
+      setTimeout(function () { var n = form.elements.name; if (n) n.focus(); }, 60);
+      track("wa_gate_open", { cta_location: src.loc, phase: src.phase, unit_type: src.unit });
+    }
+    window.HZ_GATE = { open: open };
+    g.querySelectorAll("[data-wag-close]").forEach(function (b) { b.addEventListener("click", close); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !g.hidden) close(); });
+    form.querySelectorAll("button[type=submit]").forEach(function (b) {
+      b.addEventListener("click", function () { mode = b.getAttribute("data-mode") || "wa"; });
+    });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (form.elements.website && form.elements.website.value) return;   // honeypot
+      var name = form.elements.name, phone = form.elements.phone, valid = true;
+      function setErr(el, msg) {
+        var box = (el.closest("[data-field]") || el.parentNode).querySelector(".err");
+        if (box) box.textContent = msg;
+        el.setAttribute("aria-invalid", msg ? "true" : "false");
+        if (msg) valid = false;
+      }
+      var full = fullPhone(form);
+      setErr(name, name.value.trim().length < 2 ? T.errName : "");
+      setErr(phone, phoneOK(full) ? "" : (/^\+20/.test(full) ? T.errPhone : T.errPhoneIntl));
+      if (!valid) { form.querySelector('[aria-invalid="true"]').focus(); return; }
+      var s0 = src || ctx(document.createElement("a"));
+      var interest = [s0.phase, s0.unit].filter(Boolean).join(" · ");
+      var data = Object.assign({
+        name: name.value.trim(), phone: full, project: PAGE.project, interest: interest,
+        form_location: (mode === "wa" ? "WhatsApp" : "Callback") + " · " + s0.loc,
+        page: location.pathname, page_url: location.href, submitted_at: new Date().toISOString(),
+        lang: (document.documentElement.lang || "ar").slice(0, 2),
+        device: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? "Mobile" : (/iPad|Tablet/i.test(navigator.userAgent) ? "Tablet" : "Desktop")
+      }, attr);
+      delete data._ts;
+      if (SITE.formEndpoint) {
+        try {
+          fetch(SITE.formEndpoint, { method: "POST", mode: "no-cors", keepalive: true,
+            headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" }, body: new URLSearchParams(data).toString() });
+        } catch (err) {}
+      }
+      var params = { cta_location: s0.loc, phase: s0.phase, unit_type: s0.unit, form_location: data.form_location };
+      if (mode === "wa") {
+        var url = waUrl(s0.msg + "\n" + T.rlm + T.tyName + data.name);
+        var w = window.open(url, "_blank");           // opened synchronously (still inside the click) so it isn't blocked
+        sset("hz_wa", JSON.stringify({ name: data.name }));
+        link.href = url;
+        form.hidden = true; ok.hidden = false;
+        sha256(full).then(function (h) { params.user_data = { sha256_phone_number: h }; }, function () {}).then(function () {
+          track("whatsapp_click", params);           // Ads "WhatsApp" conversion now = number captured + WhatsApp opened
+          if (s0.intent === "payment_plan") track("payment_plan_request", { cta_location: s0.loc, phase: s0.phase, unit_type: s0.unit });
+        });
+        if (!w) location.href = url;
+      } else {
+        sha256(full).then(function (h) { return h; }, function () { return ""; }).then(function (h) {
+          sset("hz_lead", JSON.stringify({ name: data.name, interest: interest, project: PAGE.project, form_location: data.form_location, ph: h }));
+          location.href = SITE.thankYouUrl + "?ok=1";
+        });
+      }
+    });
+  })();
 
   /* ---------- cookies / consent ----------
      Outside Europe: short notice, once per session, auto-hides (consent granted by default in <head>).
