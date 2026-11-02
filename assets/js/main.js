@@ -20,13 +20,15 @@
     errName: "Please enter your name", errPhone: "Please enter a valid mobile number, e.g. +20 101 234 5678",
     sending: "Sending...", errSend: "Couldn't send. Please try again or message us on WhatsApp.",
     tyHello: "Hello, I just submitted my details on the website.", tyName: "Name: ", tyInt: "Interested in: ", rlm: "",
-    phEg: "01xxxxxxxxx", phIntl: "Mobile number", errPhoneIntl: "Please enter a valid mobile number"
+    phEg: "01xxxxxxxxx", phIntl: "Mobile number", errPhoneIntl: "Please enter a valid mobile number",
+    gatePrice: "Leave your number and we'll send you the price on WhatsApp"
   } : {
     waDefault: "مرحباً، عايز أعرف تفاصيل أكتر.", less: "اعرض أقل", allUnits: "اعرض كل الوحدات",
     errName: "اكتب اسمك", errPhone: "اكتب رقم موبايل صحيح، مثال 01012345678",
     sending: "جاري الإرسال...", errSend: "الإرسال ماكملش. جرّب تاني أو كلمنا واتساب.",
     tyHello: "مرحباً، سجلت بياناتي على الموقع.", tyName: "الاسم: ", tyInt: "مهتم بـ: ", rlm: "\u200F",
-    phEg: "01xxxxxxxxx", phIntl: "رقم الموبايل", errPhoneIntl: "اكتب رقم موبايل صحيح"
+    phEg: "01xxxxxxxxx", phIntl: "رقم الموبايل", errPhoneIntl: "اكتب رقم موبايل صحيح",
+    gatePrice: "سيب رقمك ونبعتلك السعر على واتساب"
   };
   if (EN) SITE.thankYouUrl = "/en/thank-you/";
   var PAGE = {
@@ -107,7 +109,8 @@
       var box = el.closest("tr, li, .card, .phase, .ready, article");
       var wa = box && box.querySelector("[data-wa]");
       track("price_unlock_click", { cta_location: wa ? (wa.getAttribute("data-loc") || "") : "", phase: wa ? (wa.getAttribute("data-phase") || "") : "" });
-      if (wa) wa.click();
+      if (!wa) return;
+      if (window.HZ_GATE) window.HZ_GATE.open(wa, { price: true }); else wa.click();
     }
     el.addEventListener("click", go);
     el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
@@ -330,8 +333,11 @@
                intent: a.getAttribute("data-intent") || "", msg: a.getAttribute("data-wa-msg") || defaultMsg };
     }
     function close() { g.hidden = true; body.classList.remove("wag-on"); if (lastFocus) try { lastFocus.focus(); } catch (e) {} }
-    function open(a) {
+    var titleEl = g.querySelector("#wag-t"), titleDef = titleEl ? titleEl.textContent : "";
+    function open(a, opt) {
       src = ctx(a);
+      if (opt && opt.price) src.loc = "price_unlock";
+      if (titleEl) titleEl.textContent = opt && opt.price ? T.gatePrice : titleDef;
       var known = null; try { known = JSON.parse(sget("hz_wa") || "null"); } catch (e) {}
       if (known) {                                   // already gave their number this session → straight to WhatsApp
         window.open(waUrl(src.msg + "\n" + T.rlm + T.tyName + known.name), "_blank");

@@ -464,3 +464,7 @@ body.wag-on{overflow:hidden}
   .wag-box{max-width:none;border-radius:20px 20px 0 0;max-height:92dvh;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
 }
 body.wag-on .cookie,body.wag-on .mbar{display:none!important}
+/* price hint names its destination (WhatsApp) and must fit over the blurred value */
+.pz{min-width:10.5em;min-height:1.9em;padding:0 4px}
+.pz-hint{inset:auto;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.72);border:1.5px solid #BFE3CD;border-radius:999px;padding:.12rem .6rem;line-height:1.5}
+.u-main{flex-wrap:wrap;row-gap:4px}
