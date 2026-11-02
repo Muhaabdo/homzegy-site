@@ -22,6 +22,7 @@
     tyHello: "Hello, I just submitted my details on the website.", tyName: "Name: ", tyInt: "Interested in: ", rlm: "",
     phEg: "01xxxxxxxxx", phIntl: "Mobile number", errPhoneIntl: "Please enter a valid mobile number",
     gatePrice: "Price and more details on WhatsApp",
+    formTitle: "Leave your details and we'll call you", formSub: "Enter your name and number and our team will contact you shortly.",
     tyWaTitle: "Thanks {name}, taking you to WhatsApp…", tyWaText: "Your details are saved. If WhatsApp doesn't open in a few seconds, tap the button below."
   } : {
     waDefault: "مرحباً، عايز أعرف تفاصيل أكتر.", less: "اعرض أقل", allUnits: "اعرض كل الوحدات",
@@ -30,6 +31,7 @@
     tyHello: "مرحباً، سجلت بياناتي على الموقع.", tyName: "الاسم: ", tyInt: "مهتم بـ: ", rlm: "\u200F",
     phEg: "01xxxxxxxxx", phIntl: "رقم الموبايل", errPhoneIntl: "اكتب رقم موبايل صحيح",
     gatePrice: "السعر وتفاصيل أكثر على واتساب",
+    formTitle: "سيب بياناتك ونكلمك", formSub: "اكتب اسمك ورقمك وفريقنا هيتواصل معاك في أقرب وقت.",
     tyWaTitle: "شكراً يا {name}، بنحوّلك على واتساب…", tyWaText: "بياناتك اتسجلت. لو واتساب ما فتحش خلال ثواني، اضغط على الزرار اللي تحت."
   };
   if (EN) SITE.thankYouUrl = "/en/thank-you/";
@@ -88,6 +90,9 @@
       if (window.HZ_GATE) window.HZ_GATE.open(a);
       else window.open(a.href, "_blank");
     });
+  });
+  document.querySelectorAll("[data-form-open]").forEach(function (b) {
+    b.addEventListener("click", function () { if (window.HZ_GATE) window.HZ_GATE.open(b, { form: true }); });
   });
   document.querySelectorAll("[data-call]").forEach(function (a) {
     a.href = "tel:" + SITE.phone;
@@ -336,10 +341,30 @@
     }
     function close() { g.hidden = true; body.classList.remove("wag-on"); if (lastFocus) try { lastFocus.focus(); } catch (e) {} }
     var titleEl = g.querySelector("#wag-t"), titleDef = titleEl ? titleEl.textContent : "";
+    var subEl = g.querySelector(".wag-sub"), subDef = subEl ? subEl.textContent : "";
+    var isForm = false;
+    function setMode(f) {
+      isForm = f; mode = f ? "form" : "wa";
+      g.querySelector(".wag-go").hidden = f; g.querySelector(".wag-alt").hidden = f;
+      g.querySelector(".wag-send").hidden = !f;
+      g.querySelector("[data-ic-wa]").hidden = f; g.querySelector("[data-ic-form]").hidden = !f;
+      if (subEl) subEl.textContent = f ? T.formSub : subDef;
+    }
     function open(a, opt) {
       src = ctx(a);
-      if (opt && opt.price) src.loc = "price_unlock";
-      if (titleEl) titleEl.textContent = opt && opt.price ? T.gatePrice : titleDef;
+      opt = opt || {};
+      if (opt.price) src.loc = "price_unlock";
+      setMode(!!opt.form);
+      if (titleEl) titleEl.textContent = opt.form ? T.formTitle : (opt.price ? T.gatePrice : titleDef);
+      if (opt.form) {
+        lastFocus = a;
+        var lbl = [src.phase, src.unit].filter(Boolean).filter(function (v, i, arr) { return arr.indexOf(v) === i; }).join(" · ");
+        ctxEl.textContent = lbl; ctxEl.hidden = !lbl;
+        g.hidden = false; body.classList.add("wag-on");
+        setTimeout(function () { var n = form.elements.name; if (n) n.focus(); }, 60);
+        track("form_popup_open", { cta_location: src.loc, phase: src.phase, unit_type: src.unit });
+        return;
+      }
       var known = null; try { known = JSON.parse(sget("hz_wa") || "null"); } catch (e) {}
       if (known) {                                   // already gave their number this session → straight to WhatsApp
         window.open(waUrl(src.msg + "\n" + T.rlm + T.tyName + known.name), "_blank");
@@ -357,7 +382,7 @@
     g.querySelectorAll("[data-wag-close]").forEach(function (b) { b.addEventListener("click", close); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !g.hidden) close(); });
     form.querySelectorAll("button[type=submit]").forEach(function (b) {
-      b.addEventListener("click", function () { mode = b.getAttribute("data-mode") || "wa"; });
+      b.addEventListener("click", function () { if (!b.hidden) mode = b.getAttribute("data-mode") || "wa"; });
     });
     form.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -377,7 +402,7 @@
       var interest = [s0.phase, s0.unit].filter(Boolean).join(" · ");
       var data = Object.assign({
         name: name.value.trim(), phone: full, project: PAGE.project, interest: interest,
-        form_location: (mode === "wa" ? "WhatsApp" : "Callback") + " · " + s0.loc,
+        form_location: (mode === "wa" ? "WhatsApp" : mode === "form" ? "Form" : "Callback") + " · " + s0.loc,
         page: location.pathname, page_url: location.href, submitted_at: new Date().toISOString(),
         lang: (document.documentElement.lang || "ar").slice(0, 2),
         device: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? "Mobile" : (/iPad|Tablet/i.test(navigator.userAgent) ? "Tablet" : "Desktop")

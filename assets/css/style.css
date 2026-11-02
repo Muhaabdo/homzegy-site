@@ -475,3 +475,15 @@ body.wag-on .cookie,body.wag-on .mbar{display:none!important}
   .hero-strip{min-height:180px!important;border-radius:var(--r)!important}
   .hero-strip figcaption{display:none}
 }
+
+/* ---------- second CTA: lead-form popup next to WhatsApp ---------- */
+.btn-form svg{width:18px;height:18px}
+.wag-send{width:100%}
+.wag-ic-form{background:#FBE9E2;color:var(--coral-ink,#A9461F)}
+.plist td.u-cta{white-space:nowrap}
+.plist td.u-cta .btn + .btn{margin-inline-start:6px}
+.ready .btn + .btn{margin-top:8px}
+@media (max-width:760px){
+  .plist td.u-cta{display:flex;gap:8px;white-space:normal}
+  .plist td.u-cta .btn{flex:1 1 0;margin:0!important;padding-inline:.6rem}
+}
