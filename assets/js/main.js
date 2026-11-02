@@ -88,7 +88,7 @@
     a.addEventListener("click", function (e) {
       e.preventDefault();
       if (window.HZ_GATE) window.HZ_GATE.open(a);
-      else window.open(a.href, "_blank");
+      else location.hash = "contact";
     });
   });
   document.querySelectorAll("[data-form-open]").forEach(function (b) {
@@ -364,12 +364,6 @@
         g.hidden = false; body.classList.add("wag-on");
         setTimeout(function () { var n = form.elements.name; if (n) n.focus(); }, 60);
         track("form_popup_open", { cta_location: src.loc, phase: src.phase, unit_type: src.unit });
-        return;
-      }
-      var known = null; try { known = JSON.parse(sget("hz_wa") || "null"); } catch (e) {}
-      if (known) {                                   // already gave their number this session → straight to WhatsApp
-        window.open(waUrl(src.msg + "\n" + T.rlm + T.tyName + known.name), "_blank");
-        track("whatsapp_open", { cta_location: src.loc, phase: src.phase, unit_type: src.unit });
         return;
       }
       lastFocus = a;
