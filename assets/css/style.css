@@ -529,3 +529,14 @@ body.wag-on .cookie,body.wag-on .mbar{display:none!important}
   .tcard .cta-row{grid-template-columns:1fr}
   .tcard .cta-row .btn{font-size:.82rem;padding:.55rem .6rem}
 }
+/* mobile type cards: square rounded thumbnail inside the card (option 3) */
+@media (max-width:640px){
+  .tcard{grid-template-columns:auto minmax(0,1fr);align-items:start;padding:12px;gap:12px}
+  .tcard .ph{width:96px;height:96px;min-height:0;aspect-ratio:1/1;border-radius:14px}
+  .tcard .ph img{object-fit:cover}
+  .tcard .body{padding:0}
+  .tcard:nth-child(1) .ph img{object-position:60% 55%}
+  .tcard:nth-child(2) .ph img{object-position:45% 60%}
+  .tcard:nth-child(3) .ph img{object-position:40% 45%}
+  .tcard:nth-child(4) .ph img{object-position:55% 50%}
+}
