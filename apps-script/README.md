@@ -23,12 +23,11 @@
 - **تكرار**: لو نفس الرقم سجّل خلال 30 يوم بيتعلّم "Repeat".
 - الـ gclid محفوظ عشان بعدين نرفع Offline Conversions (اللي حجز فعلاً) لجوجل أدز.
 
-## إشعار الإيميل (مقفول حالياً)
-الكود جاهز في `sendLeadEmail_`. لتشغيله:
-1. فوق في `CONFIG` شيل `//` من قدام `NOTIFY_EMAIL` واكتب الإيميل.
-2. في `doPost` شيل `//` من قدام `sendLeadEmail_(lead);`.
-3. جوه `sendLeadEmail_` شيل `//` من أول كل سطر.
-4. **Deploy → Manage deployments → Edit → New version**.
+## إشعار الإيميل (شغّال)
+- كل ليد بيوصل إيميل لـ `rbessada@gmail.com`، و`info@mohabdo.com` في الـ CC.
+- لتغيير الإيميلات: عدّل `NOTIFY_EMAIL` و`NOTIFY_CC` في `CONFIG` أول الملف. ولو عايز توقفه، فضّي `NOTIFY_EMAIL`.
+- أول مرة بعد التحديث جوجل هتطلب صلاحية إرسال إيميل: شغّل `setup` من المحرر ووافق.
+- لو الإيميل فشل لأي سبب، الليد بيتسجل في الشيت عادي.
 
 ## ملاحظات
 - أي تعديل في الكود بعد النشر: **Manage deployments → Edit → Version: New version** عشان اللينك يفضل هو هو.

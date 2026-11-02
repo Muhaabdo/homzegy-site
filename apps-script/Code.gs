@@ -14,7 +14,8 @@ const CONFIG = {
   SHEET_SUMMARY: 'Summary',
   TIMEZONE: 'Africa/Cairo',
   DUPLICATE_WINDOW_DAYS: 30,          // same phone within N days → flagged as repeat
-  // NOTIFY_EMAIL: 'sales@example.com', // ← email notifications (see sendLeadEmail_ below, currently disabled)
+  NOTIFY_EMAIL: 'rbessada@gmail.com',  // new-lead email goes here
+  NOTIFY_CC: 'info@mohabdo.com',       // copied on every lead email (comma-separate for more)
 };
 
 // Homzegy brand colors
@@ -126,7 +127,7 @@ function doPost(e) {
     sh.getRange(row, COL.whatsapp).setFormula('=HYPERLINK("https://wa.me/' + waNumber_(phone) + '","Open WhatsApp")');
     styleDataRow_(sh, row);
 
-    // sendLeadEmail_(lead);   // ← enable later (uncomment) after setting CONFIG.NOTIFY_EMAIL
+    try { sendLeadEmail_(lead); } catch (mailErr) { console.error('lead email failed: ' + mailErr); }  // never blocks saving the lead
 
     return json_({ ok: true, id: lead.lead_id });
   } catch (err) {
@@ -254,27 +255,27 @@ function buildSummary_(ss) {
 
 
 /* ------------------------ Email notification ------------------------ */
-// Disabled for now. To enable: set CONFIG.NOTIFY_EMAIL above, then uncomment the call in doPost and the body below.
+// Sends one email per lead to CONFIG.NOTIFY_EMAIL (cc CONFIG.NOTIFY_CC). Leave NOTIFY_EMAIL empty to switch it off.
 function sendLeadEmail_(lead) {
-  // if (!CONFIG.NOTIFY_EMAIL) return;
-  // const subject = 'New lead — ' + (lead.project || 'Homzegy') + ' — ' + lead.name;
-  // const rows = [
-  //   ['Name', lead.name], ['Phone', lead.phone], ['Email', lead.email], ['Project', lead.project], ['Interest', lead.interest],
-  //   ['Source', lead.source], ['Campaign', lead.campaign], ['Keyword', lead.keyword], ['Page', lead.page],
-  //   ['Device', lead.device], ['Repeat', lead.repeat || '—'], ['Lead ID', lead.lead_id]
-  // ];
-  // const html =
-  //   '<div dir="ltr" style="font-family:Tahoma,Arial,sans-serif;color:' + BRAND.navy + '">' +
-  //   '<div style="background:' + BRAND.navy + ';color:#fff;padding:14px 18px;border-radius:10px 10px 0 0;font-size:18px"><b>Homzegy</b> — New lead</div>' +
-  //   '<table style="border-collapse:collapse;width:100%;max-width:560px;background:#fff">' +
-  //   rows.map(function (r, i) {
-  //     return '<tr style="background:' + (i % 2 ? BRAND.sandLight : '#fff') + '"><td style="padding:8px 12px;font-weight:bold;width:130px">' + r[0] +
-  //            '</td><td style="padding:8px 12px">' + (r[1] || '—') + '</td></tr>';
-  //   }).join('') +
-  //   '</table>' +
-  //   '<p style="margin:16px 0"><a href="https://wa.me/' + waNumber_(lead.phone) + '" style="background:#1F8F4E;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">WhatsApp him</a> ' +
-  //   '&nbsp; <a href="' + SpreadsheetApp.getActiveSpreadsheet().getUrl() + '" style="color:' + BRAND.teal + '">Open sheet</a></p></div>';
-  // MailApp.sendEmail({ to: CONFIG.NOTIFY_EMAIL, subject: subject, htmlBody: html, name: 'Homzegy Leads' });
+  if (!CONFIG.NOTIFY_EMAIL) return;
+  const subject = 'New lead — ' + (lead.project || 'Homzegy') + ' — ' + String(lead.name).replace(/^'/, '');
+  const rows = [
+    ['Name', lead.name], ['Phone', lead.phone], ['Email', lead.email], ['Project', lead.project], ['Interest', lead.interest],
+    ['Source', lead.source], ['Campaign', lead.campaign], ['Keyword', lead.keyword], ['Page', lead.page],
+    ['Came from', lead.form_location], ['Device', lead.device], ['Repeat', lead.repeat || '—'], ['Lead ID', lead.lead_id]
+  ];
+  const html =
+    '<div dir="ltr" style="font-family:Tahoma,Arial,sans-serif;color:' + BRAND.navy + '">' +
+    '<div style="background:' + BRAND.navy + ';color:#fff;padding:14px 18px;border-radius:10px 10px 0 0;font-size:18px"><b>Homzegy</b> — New lead</div>' +
+    '<table style="border-collapse:collapse;width:100%;max-width:560px;background:#fff">' +
+    rows.map(function (r, i) {
+      return '<tr style="background:' + (i % 2 ? BRAND.sandLight : '#fff') + '"><td style="padding:8px 12px;font-weight:bold;width:130px">' + r[0] +
+             '</td><td style="padding:8px 12px">' + escHtml_(r[1] || '—') + '</td></tr>';
+    }).join('') +
+    '</table>' +
+    '<p style="margin:16px 0"><a href="https://wa.me/' + waNumber_(lead.phone) + '" style="background:#1F8F4E;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">Open WhatsApp</a> ' +
+    '&nbsp; <a href="' + SpreadsheetApp.getActiveSpreadsheet().getUrl() + '" style="color:' + BRAND.teal + '">Open sheet</a></p></div>';
+  MailApp.sendEmail({ to: CONFIG.NOTIFY_EMAIL, cc: CONFIG.NOTIFY_CC || '', subject: subject, htmlBody: html, name: 'Homzegy Leads' });
 }
 
 
@@ -365,6 +366,8 @@ function clean_(v) {
 }
 
 function colLetter_(n) { let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; }
+
+function escHtml_(v) { return String(v).replace(/^'/, '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
 function toast_(ss, msg) { try { ss.toast(msg, 'Homzegy', 4); } catch (e) {} }
 
