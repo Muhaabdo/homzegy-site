@@ -21,14 +21,16 @@
     sending: "Sending...", errSend: "Couldn't send. Please try again or message us on WhatsApp.",
     tyHello: "Hello, I just submitted my details on the website.", tyName: "Name: ", tyInt: "Interested in: ", rlm: "",
     phEg: "01xxxxxxxxx", phIntl: "Mobile number", errPhoneIntl: "Please enter a valid mobile number",
-    gatePrice: "Leave your number and we'll send you the price on WhatsApp"
+    gatePrice: "Price and more details on WhatsApp",
+    tyWaTitle: "Thanks {name}, taking you to WhatsApp…", tyWaText: "Your details are saved. If WhatsApp doesn't open in a few seconds, tap the button below."
   } : {
     waDefault: "مرحباً، عايز أعرف تفاصيل أكتر.", less: "اعرض أقل", allUnits: "اعرض كل الوحدات",
     errName: "اكتب اسمك", errPhone: "اكتب رقم موبايل صحيح، مثال 01012345678",
     sending: "جاري الإرسال...", errSend: "الإرسال ماكملش. جرّب تاني أو كلمنا واتساب.",
     tyHello: "مرحباً، سجلت بياناتي على الموقع.", tyName: "الاسم: ", tyInt: "مهتم بـ: ", rlm: "\u200F",
     phEg: "01xxxxxxxxx", phIntl: "رقم الموبايل", errPhoneIntl: "اكتب رقم موبايل صحيح",
-    gatePrice: "سيب رقمك ونبعتلك السعر على واتساب"
+    gatePrice: "السعر وتفاصيل أكثر على واتساب",
+    tyWaTitle: "شكراً يا {name}، بنحوّلك على واتساب…", tyWaText: "بياناتك اتسجلت. لو واتساب ما فتحش خلال ثواني، اضغط على الزرار اللي تحت."
   };
   if (EN) SITE.thankYouUrl = "/en/thank-you/";
   var PAGE = {
@@ -326,7 +328,7 @@
   (function () {
     var g = document.getElementById("wa-gate");
     if (!g) return;
-    var form = g.querySelector("[data-wag-form]"), ok = g.querySelector("[data-wag-ok]"), link = g.querySelector("[data-wag-link]");
+    var form = g.querySelector("[data-wag-form]");
     var ctxEl = g.querySelector("[data-wag-ctx]"), src = null, lastFocus = null, mode = "wa";
     function ctx(a) {
       return { loc: a.getAttribute("data-loc") || "unknown", phase: a.getAttribute("data-phase") || "", unit: a.getAttribute("data-unit") || "",
@@ -347,7 +349,6 @@
       lastFocus = a;
       var label = [src.phase, src.unit].filter(Boolean).filter(function (v, i, arr) { return arr.indexOf(v) === i; }).join(" · ");
       ctxEl.textContent = label; ctxEl.hidden = !label;
-      form.hidden = false; ok.hidden = true;
       g.hidden = false; body.classList.add("wag-on");
       setTimeout(function () { var n = form.elements.name; if (n) n.focus(); }, 60);
       track("wa_gate_open", { cta_location: src.loc, phase: src.phase, unit_type: src.unit });
@@ -388,24 +389,14 @@
             headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" }, body: new URLSearchParams(data).toString() });
         } catch (err) {}
       }
-      var params = { cta_location: s0.loc, phase: s0.phase, unit_type: s0.unit, form_location: data.form_location };
-      if (mode === "wa") {
-        var url = waUrl(s0.msg + "\n" + T.rlm + T.tyName + data.name);
-        var w = window.open(url, "_blank");           // opened synchronously (still inside the click) so it isn't blocked
-        sset("hz_wa", JSON.stringify({ name: data.name }));
-        link.href = url;
-        form.hidden = true; ok.hidden = false;
-        sha256(full).then(function (h) { params.user_data = { sha256_phone_number: h }; }, function () {}).then(function () {
-          track("whatsapp_click", params);           // Ads "WhatsApp" conversion now = number captured + WhatsApp opened
-          if (s0.intent === "payment_plan") track("payment_plan_request", { cta_location: s0.loc, phase: s0.phase, unit_type: s0.unit });
-        });
-        if (!w) location.href = url;
-      } else {
-        sha256(full).then(function (h) { return h; }, function () { return ""; }).then(function (h) {
-          sset("hz_lead", JSON.stringify({ name: data.name, interest: interest, project: PAGE.project, form_location: data.form_location, ph: h }));
-          location.href = SITE.thankYouUrl + "?ok=1";
-        });
-      }
+      // Both paths: lead saved → thank-you page. WhatsApp path then opens WhatsApp from the thank-you page.
+      var waLink = mode === "wa" ? waUrl(s0.msg + "\n" + T.rlm + T.tyName + data.name) : "";
+      if (mode === "wa") sset("hz_wa", JSON.stringify({ name: data.name }));
+      sha256(full).then(function (h) { return h; }, function () { return ""; }).then(function (h) {
+        sset("hz_lead", JSON.stringify({ name: data.name, interest: interest, project: PAGE.project, form_location: data.form_location, ph: h,
+          wa: waLink, loc: s0.loc, phase: s0.phase, unit: s0.unit, intent: s0.intent }));
+        location.href = SITE.thankYouUrl + "?ok=1" + (waLink ? "&via=wa" : "");
+      });
     });
   })();
 
@@ -463,13 +454,25 @@
     try { lead = JSON.parse(sget("hz_lead") || "null"); } catch (e) { lead = null; }
     if (lead) {
       var ev = { lead_project: lead.project, interest: lead.interest || "", form_location: lead.form_location || "" };
-      if (lead.ph) ev.user_data = { sha256_phone_number: lead.ph };   // read by the Google Ads conversion tag (enhanced conversions)
-      track("generate_lead", ev);
+      if (lead.ph) ev.user_data = { sha256_phone_number: lead.ph };   // read by the Google Ads conversion tags (enhanced conversions)
       try { sessionStorage.removeItem("hz_lead"); } catch (e) {}
       var R = T.rlm;
-      document.querySelectorAll("[data-wa-after]").forEach(function (wa) {
-        wa.href = waUrl([R + T.tyHello, R + T.tyName + lead.name, R + T.tyInt + (lead.interest || lead.project)].join("\n"));
-      });
+      if (lead.wa) {
+        // WhatsApp gate lead → WhatsApp conversion, then open WhatsApp automatically
+        ev.cta_location = lead.loc || ""; ev.phase = lead.phase || ""; ev.unit_type = lead.unit || "";
+        track("whatsapp_click", ev);
+        if (lead.intent === "payment_plan") track("payment_plan_request", { cta_location: lead.loc || "", phase: lead.phase || "", unit_type: lead.unit || "" });
+        var tt = document.querySelector("[data-ty-title]"), tx = document.querySelector("[data-ty-text]");
+        if (tt) tt.textContent = T.tyWaTitle.replace("{name}", lead.name);
+        if (tx) tx.textContent = T.tyWaText;
+        document.querySelectorAll("[data-wa-after]").forEach(function (wa) { wa.href = lead.wa; });
+        setTimeout(function () { location.href = lead.wa; }, 1800);     // gives GTM time to send the conversion first
+      } else {
+        track("generate_lead", ev);
+        document.querySelectorAll("[data-wa-after]").forEach(function (wa) {
+          wa.href = waUrl([R + T.tyHello, R + T.tyName + lead.name, R + T.tyInt + (lead.interest || lead.project)].join("\n"));
+        });
+      }
     }
   }
 
