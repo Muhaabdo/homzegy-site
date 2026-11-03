@@ -562,3 +562,5 @@ body.wag-on .cookie,body.wag-on .mbar{display:none!important}
 .cc-list li.none{color:var(--muted);cursor:default}
 .phone-in{align-items:stretch}
 @media (max-width:640px){ .cc-list{max-height:38vh} }
+footer .legal-note .credit{font-size:.78rem;opacity:.7;text-align:center;margin:.4rem auto 0}
+footer .legal-note .credit a{color:inherit}
