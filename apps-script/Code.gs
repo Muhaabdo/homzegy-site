@@ -14,8 +14,8 @@ const CONFIG = {
   SHEET_SUMMARY: 'Summary',
   TIMEZONE: 'Africa/Cairo',
   DUPLICATE_WINDOW_DAYS: 30,          // same phone within N days → flagged as repeat
-  NOTIFY_EMAIL: 'rbessada@gmail.com',  // new-lead email goes here
-  NOTIFY_CC: 'info@mohabdo.com',       // copied on every lead email (comma-separate for more)
+  NOTIFY_EMAIL: 'info@mohabdo.com',    // new-lead email goes here
+  NOTIFY_CC: '',                       // optional cc (comma-separate for more)
 };
 
 // Homzegy brand colors

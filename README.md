@@ -19,8 +19,8 @@
 
 ## الإعدادات (أول `assets/js/main.js`)
 ```js
-whatsapp: "201224044430",
-phone: "+201224044430",
+whatsapp: "",   // fill when the number is ready, e.g. "201XXXXXXXXX"
+phone: "",      // e.g. "+201XXXXXXXXX"
 formEndpoint: "",          // لينك Google Apps Script — شوف apps-script/README.md
 thankYouUrl: "/thank-you/" // الفورم بيحوّل هنا بعد الإرسال
 ```

@@ -4,8 +4,8 @@
 
   /* ================= CONFIG — edit here ================= */
   var SITE = {
-    whatsapp: "201224044430",          // WhatsApp number, international format, no +
-    phone: "+201224044430",            // Call number
+    whatsapp: "",                      // WhatsApp number, international format, no + (e.g. "201XXXXXXXXX"). Empty = leads still saved, no WhatsApp redirect
+    phone: "",                         // Call number (e.g. "+201XXXXXXXXX"). Empty = call buttons hidden
     formEndpoint: "https://script.google.com/macros/s/AKfycbx9Z9_awFV8kVmmFI51NPHlN7x3Yy4uWisdlUY_HGQFI9j1E8gzCRdKEkGZgYpTjBx3/exec",                  // Google Apps Script Web App URL (see apps-script/README.md)
     thankYouUrl: "/thank-you/",        // page shown after a successful form submit (generate_lead fires there)
     cookieHideMs: 8000                 // cookie notice auto-hide delay
@@ -94,6 +94,10 @@
   document.querySelectorAll("[data-form-open]").forEach(function (b) {
     b.addEventListener("click", function () { if (window.HZ_GATE) window.HZ_GATE.open(b, { form: true }); });
   });
+  if (!SITE.phone) {                                    // no call number yet → hide every call button
+    document.querySelectorAll("[data-call]").forEach(function (a) { a.hidden = true; a.style.display = "none"; });
+    body.classList.add("no-call");
+  }
   document.querySelectorAll("[data-call]").forEach(function (a) {
     a.href = "tel:" + SITE.phone;
     a.addEventListener("click", function () {
@@ -556,7 +560,7 @@
       }
       try { sessionStorage.removeItem("hz_lead"); } catch (e) {}
       var R = T.rlm;
-      if (lead.wa) {
+      if (lead.wa && SITE.whatsapp) {
         // WhatsApp gate lead → WhatsApp conversion, then open WhatsApp automatically
         ev.cta_location = lead.loc || ""; ev.phase = lead.phase || ""; ev.unit_type = lead.unit || "";
         track("generate_lead", Object.assign({ lead_type: "whatsapp" }, ev));   // every thank-you lead = "Form Lead (thank-you)" (primary goal)
@@ -569,13 +573,15 @@
         document.querySelectorAll("[data-wa-after]").forEach(function (wa) { wa.href = lead.wa; });
         setTimeout(function () { location.href = lead.wa; }, 1800);     // gives GTM time to send the conversion first
       } else {
-        track("generate_lead", Object.assign({ lead_type: "callback" }, ev));
+        track("generate_lead", Object.assign({ lead_type: lead.wa ? "whatsapp" : "callback" }, ev));
         document.querySelectorAll("[data-wa-after]").forEach(function (wa) {
           wa.href = waUrl([R + T.tyHello, R + T.tyName + lead.name, R + T.tyInt + (lead.interest || lead.project)].join("\n"));
         });
       }
     }
   }
+
+  if (!SITE.whatsapp) document.querySelectorAll("[data-wa-after]").forEach(function (a) { a.style.display = "none"; });
 
   /* ---------- misc ---------- */
   document.querySelectorAll("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
